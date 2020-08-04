@@ -21,6 +21,7 @@ namespace AStar
             Dictionary<AStarTile, AStarNode> tile_nodes = new Dictionary<AStarTile, AStarNode>();
             startnode.EvaluateNode(startnode, targetnode);
             open_nodes.Add(startnode);
+            AStarNode smallestNode = startnode;
             tile_nodes.Add(startnode.Tile, startnode);
             tile_nodes.Add(targetnode.Tile, targetnode);
             AStarNode current = startnode;
@@ -29,7 +30,7 @@ namespace AStar
                 current = open_nodes[0];
                 foreach (AStarNode node in open_nodes)
                 {
-                    if (node.F - current.F < -0.0001f)
+                    if (node.F - current.F < -0.01f)
                     {
                         current = node;
                     }
