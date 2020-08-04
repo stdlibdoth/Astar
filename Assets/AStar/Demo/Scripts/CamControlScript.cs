@@ -48,6 +48,8 @@ public class CamControlScript : MonoBehaviour
 
         if (m_camPanState == 0 && Input.mouseScrollDelta.y != 0)
         {
+            if (m_uiTag.CurrentPage == null)
+                return;
             float camsize = m_cam.orthographicSize - Input.mouseScrollDelta.y * m_zoomSensibility;
             camsize = Mathf.Clamp(camsize, m_zoomMin, 1.2f * AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.y);
             m_cam.orthographicSize = camsize;
