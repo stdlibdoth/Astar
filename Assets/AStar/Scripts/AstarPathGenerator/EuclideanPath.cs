@@ -21,19 +21,21 @@ namespace AStar
             Dictionary<AStarTile, AStarNode> tile_nodes = new Dictionary<AStarTile, AStarNode>();
             startnode.EvaluateNode(startnode, targetnode);
             open_nodes.Add(startnode);
-            tile_nodes.Add(startnode.Tile, startnode);
-            tile_nodes.Add(targetnode.Tile, targetnode);
+            tile_nodes.Add(startnode.tile, startnode);
+            tile_nodes.Add(targetnode.tile, targetnode);
             AStarNode current = startnode;
             while (current != targetnode && open_nodes.Count > 0)
             {
                 current = open_nodes[0];
                 foreach (AStarNode node in open_nodes)
                 {
-                    if (node.F - current.F < -0.0001f)
+                    float currentF = current.h + current.g;
+                    float nodeF = node.h + node.g;
+                    if (nodeF - currentF < -0.0001f)
                     {
                         current = node;
                     }
-                    else if (node.F == current.F && node.G < current.G)
+                    else if (nodeF == currentF && node.g < current.g)
                     {
                         current = node;
                     }
@@ -57,9 +59,9 @@ namespace AStar
                 AStarTile tile_nw = null;
                 AStarTile tile_se = null;
                 AStarTile tile_sw = null;
-                if (grid.CheckBoundary(current.Tile.X, current.Tile.Y + 1))
+                if (grid.CheckBoundary(current.tile.X, current.tile.Y + 1))
                 {
-                    tile_n = grid.GetTile(current.Tile.X, current.Tile.Y + 1);
+                    tile_n = grid.GetTile(current.tile.X, current.tile.Y + 1);
                     eval_tiles.Add(tile_n);
                     if (tile_nodes.ContainsKey(tile_n) && tile_nodes[tile_n].nodeType == NodeType.CORNER)
                     {
@@ -67,9 +69,9 @@ namespace AStar
                         open_nodes.Add(tile_nodes[tile_n]);
                     }
                 }
-                if (grid.CheckBoundary(current.Tile.X, current.Tile.Y - 1))
+                if (grid.CheckBoundary(current.tile.X, current.tile.Y - 1))
                 {
-                    tile_s = grid.GetTile(current.Tile.X, current.Tile.Y - 1);
+                    tile_s = grid.GetTile(current.tile.X, current.tile.Y - 1);
                     eval_tiles.Add(tile_s);
                     if (tile_nodes.ContainsKey(tile_s) && tile_nodes[tile_s].nodeType == NodeType.CORNER)
                     {
@@ -77,9 +79,9 @@ namespace AStar
                         open_nodes.Add(tile_nodes[tile_s]);
                     }
                 }
-                if (grid.CheckBoundary(current.Tile.X + 1, current.Tile.Y))
+                if (grid.CheckBoundary(current.tile.X + 1, current.tile.Y))
                 {
-                    tile_e = grid.GetTile(current.Tile.X + 1, current.Tile.Y);
+                    tile_e = grid.GetTile(current.tile.X + 1, current.tile.Y);
                     eval_tiles.Add(tile_e);
                     if (tile_nodes.ContainsKey(tile_e) && tile_nodes[tile_e].nodeType == NodeType.CORNER)
                     {
@@ -87,9 +89,9 @@ namespace AStar
                         open_nodes.Add(tile_nodes[tile_e]);
                     }
                 }
-                if (grid.CheckBoundary(current.Tile.X - 1, current.Tile.Y))
+                if (grid.CheckBoundary(current.tile.X - 1, current.tile.Y))
                 {
-                    tile_w = grid.GetTile(current.Tile.X - 1, current.Tile.Y);
+                    tile_w = grid.GetTile(current.tile.X - 1, current.tile.Y);
                     eval_tiles.Add(tile_w);
                     if (tile_nodes.ContainsKey(tile_w) && tile_nodes[tile_w].nodeType == NodeType.CORNER)
                     {
@@ -97,33 +99,33 @@ namespace AStar
                         open_nodes.Add(tile_nodes[tile_w]);
                     }
                 }
-                if (grid.CheckBoundary(current.Tile.X + 1, current.Tile.Y + 1))
+                if (grid.CheckBoundary(current.tile.X + 1, current.tile.Y + 1))
                 {
-                    tile_ne = grid.GetTile(current.Tile.X + 1, current.Tile.Y + 1);
+                    tile_ne = grid.GetTile(current.tile.X + 1, current.tile.Y + 1);
                     eval_tiles.Add(tile_ne);
                 }
-                if (grid.CheckBoundary(current.Tile.X - 1, current.Tile.Y + 1))
+                if (grid.CheckBoundary(current.tile.X - 1, current.tile.Y + 1))
                 {
-                    tile_nw = grid.GetTile(current.Tile.X - 1, current.Tile.Y + 1);
+                    tile_nw = grid.GetTile(current.tile.X - 1, current.tile.Y + 1);
                     eval_tiles.Add(tile_nw);
                 }
-                if (grid.CheckBoundary(current.Tile.X - 1, current.Tile.Y - 1))
+                if (grid.CheckBoundary(current.tile.X - 1, current.tile.Y - 1))
                 {
-                    tile_sw = grid.GetTile(current.Tile.X - 1, current.Tile.Y - 1);
+                    tile_sw = grid.GetTile(current.tile.X - 1, current.tile.Y - 1);
                     eval_tiles.Add(tile_sw);
                 }
-                if (grid.CheckBoundary(current.Tile.X + 1, current.Tile.Y - 1))
+                if (grid.CheckBoundary(current.tile.X + 1, current.tile.Y - 1))
                 {
-                    tile_se = grid.GetTile(current.Tile.X + 1, current.Tile.Y - 1);
+                    tile_se = grid.GetTile(current.tile.X + 1, current.tile.Y - 1);
                     eval_tiles.Add(tile_se);
                 }
 
                 // Evaluate nodes
-                if (current.G > 0.001f)
+                if (current.g > 0.001f)
                 {
                     foreach (var e_t in eval_tiles)
                     {
-                        if (e_t.TileType != TileType.BLOCK && e_t.TileType != TileType.AGENT && e_t != startnode.Tile)
+                        if (e_t.TileType != TileType.BLOCK && e_t.TileType != TileType.AGENT && e_t != startnode.tile)
                         {
                             if (!tile_nodes.ContainsKey(e_t) || tile_nodes[e_t] == targetnode)
                             {
@@ -177,7 +179,7 @@ namespace AStar
                     if (backtrack != targetnode)
                     {
                         backtrack.nodeType = NodeType.PATH;
-                        m_pathTiles.Insert(1, backtrack.Tile);
+                        m_pathTiles.Insert(1, backtrack.tile);
                     }
                     backtrack = backtrack.ParentNode;
                 }

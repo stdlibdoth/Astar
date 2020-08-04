@@ -50,11 +50,11 @@ namespace AStar
                     break;
             }
 
-            m_hText.text = node.H.ToString("F1");
-            m_gText.text = node.G.ToString("F1");
-            m_fText.text = node.F.ToString("F1");
+            m_hText.text = node.h.ToString("F1");
+            m_gText.text = node.g.ToString("F1");
+            m_fText.text = (node.h + node.g).ToString("F1");
             if (node.ParentNode != null)
-                m_arrow.LookAt(node.ParentNode.Tile.transform);
+                m_arrow.LookAt(node.ParentNode.tile.transform);
             m_arrow.gameObject.SetActive(true);
             return this;
         }
