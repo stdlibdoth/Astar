@@ -38,7 +38,7 @@ namespace AStar
                     {
                             NodeOverlay n = NodeOverlayGenerator.CreateNodeOverlay(m_nodePrefab, false);
                             m_overlays.Add(n);
-                            n.transform.position = node.tile.transform.position;
+                            n.transform.position = node.Tile.transform.position;
                             n.gameObject.SetActive(true);
                             n.UpdateOverlay(node);
 
