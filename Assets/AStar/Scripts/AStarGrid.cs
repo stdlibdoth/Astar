@@ -76,7 +76,7 @@ namespace AStar
 
         public virtual float NodeDistance(AStarNode a, AStarNode b)
         {
-            return Mathf.Sqrt((a.Tile.X - b.Tile.X) * (a.Tile.X - b.Tile.X) + (a.Tile.Y - b.Tile.Y) * (a.Tile.Y - b.Tile.Y));
+            return Mathf.Sqrt((a.tile.X - b.tile.X) * (a.tile.X - b.tile.X) + (a.tile.Y - b.tile.Y) * (a.tile.Y - b.tile.Y));
         }
 
         private void OnDestroy()
