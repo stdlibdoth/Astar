@@ -21,21 +21,19 @@ namespace AStar
             Dictionary<AStarTile, AStarNode> tile_nodes = new Dictionary<AStarTile, AStarNode>();
             startnode.EvaluateNode(startnode, targetnode);
             open_nodes.Add(startnode);
-            tile_nodes.Add(startnode.tile, startnode);
-            tile_nodes.Add(targetnode.tile, targetnode);
+            tile_nodes.Add(startnode.Tile, startnode);
+            tile_nodes.Add(targetnode.Tile, targetnode);
             AStarNode current = startnode;
             while (current != targetnode && open_nodes.Count > 0)
             {
                 current = open_nodes[0];
                 foreach (AStarNode node in open_nodes)
                 {
-                    float currentF = current.h + current.g;
-                    float nodeF = node.h + node.g;
-                    if (nodeF - currentF < -0.0001f)
+                    if (node.F - current.F < -0.0001f)
                     {
                         current = node;
                     }
-                    else if (nodeF == currentF && node.g < current.g)
+                    else if (node.F == current.F && node.G < current.G)
                     {
                         current = node;
                     }
@@ -51,12 +49,12 @@ namespace AStar
                 }
 
                 //Testity surrounding tiles and evaluate nodes
-                List<AStarTile> eval_tiles = ((HexagonalGrid)grid).GetAdjacentTiles(current.tile);
-                if (current.g > 0.001f)
+                List<AStarTile> eval_tiles = ((HexagonalGrid)grid).GetAdjacentTiles(current.Tile);
+                if (current.G > 0.001f)
                 {
                     foreach (var e_t in eval_tiles)
                     {
-                        if (e_t.TileType != TileType.BLOCK && e_t.TileType != TileType.AGENT && e_t != startnode.tile)
+                        if (e_t.TileType != TileType.BLOCK && e_t.TileType != TileType.AGENT && e_t != startnode.Tile)
                         {
                             if (!tile_nodes.ContainsKey(e_t) || tile_nodes[e_t] == targetnode)
                             {
@@ -91,7 +89,7 @@ namespace AStar
                     if (backtrack != targetnode)
                     {
                         backtrack.nodeType = NodeType.PATH;
-                        m_pathTiles.Insert(1, backtrack.tile);
+                        m_pathTiles.Insert(1, backtrack.Tile);
                     }
                     backtrack = backtrack.ParentNode;
                 }
