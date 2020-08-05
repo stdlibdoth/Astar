@@ -7,7 +7,7 @@ using AStar;
 [RequireComponent(typeof(Camera))]
 public class CamControlScript : MonoBehaviour
 {
-    [SerializeField] private Camera m_cam;
+    [SerializeField] private Camera m_cam = null;
     [SerializeField] private UITag m_uiTag = null;
     [SerializeField] [Range(0,0.2f)]private float m_panSensibility = 0.1f;
     [SerializeField] [Range(0,1)]private float m_zoomSensibility = 1f;

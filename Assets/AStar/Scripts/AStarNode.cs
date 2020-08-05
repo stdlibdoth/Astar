@@ -20,27 +20,17 @@ namespace AStar
     public class AStarNode
     {
 
-        public float H { get { return h; } }
-        public float G { get { return g; } }
+        public float h;
+        public float g;
         public float F { get { return h + g; } }
-        public AStarTile Tile
-        {
-            get
-            {
-                if (m_tile != null)
-                    return m_tile;
-                return null;
-            }
-        }
+        public AStarTile tile;
+
 
 
         public NodeType nodeType;
         public AStarNode ParentNode { get { return m_parentNode; } }
 
-        private float h;
-        private float g;
         private AStarPath m_path;
-        private AStarTile m_tile;
         private AStarNode m_parentNode;
 
 
@@ -48,7 +38,7 @@ namespace AStar
         {
             m_path = path;
             m_parentNode = parent;
-            m_tile = tile;
+            this.tile = tile;
             nodeType = type;
             h = 0;
             g = 0;
@@ -56,7 +46,7 @@ namespace AStar
 
         public bool EvaluateNode(AStarNode parent, AStarNode target)
         {
-            float h = m_path.Grid.NodeDistance(this, parent) + parent.H;
+            float h = m_path.Grid.NodeDistance(this, parent) + parent.h;
             float g = m_path.Grid.NodeDistance(this, target);
             float f = this.h + this.g;
             if (g + h - f > 0.0001f && f > 0.0001f)

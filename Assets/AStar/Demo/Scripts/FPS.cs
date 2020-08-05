@@ -5,10 +5,10 @@ using UnityEngine.UI;
 
 public class FPS : MonoBehaviour
 {
-    [SerializeField] private Text m_text;
+    [SerializeField] private Text m_text = null;
 
-    [SerializeField] [Range(0.1f,5)]private float m_updateFreq;
-    [SerializeField] [Range(1,60)]private int m_consecSampleCount;
+    [SerializeField] [Range(0.1f,5)]private float m_updateFreq = 1;
+    [SerializeField] [Range(1,60)]private int m_consecSampleCount = 10;
 
     private List<float> m_intervals;
     private float m_lastUpdateTime;

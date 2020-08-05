@@ -11,7 +11,7 @@ public class ConstantSpeedAgent : MoveAgent
     [Header("Constant speed agent")]
     public float constSpeed;
 
-    [SerializeField] private TextMesh m_nameTag;
+    [SerializeField] private TextMesh m_nameTag = null;
 
 
     public void ActiveNameTag(bool active)

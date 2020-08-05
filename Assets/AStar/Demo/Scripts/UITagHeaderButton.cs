@@ -13,12 +13,12 @@ public class UITagHeaderButton : MonoBehaviour,IPointerClickHandler
 
     }
 
-    [SerializeField] private Text m_text;
-    [SerializeField] private Image m_image;
-    [SerializeField] private Button m_deleteBtn;
+    [SerializeField] private Text m_text = null;
+    [SerializeField] private Image m_image = null;
+    [SerializeField] private Button m_deleteBtn = null;
 
-    [SerializeField] private Color m_onColor;
-    [SerializeField] private Color m_offColor;
+    [SerializeField] private Color m_onColor = new Color(0,0,0,0);
+    [SerializeField] private Color m_offColor = new Color(0,0,0,0);
 
     private bool m_isOn;
     private HeaderEvent m_onValueChanged;

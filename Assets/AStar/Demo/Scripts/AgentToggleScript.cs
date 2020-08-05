@@ -7,11 +7,11 @@ using AStar;
 [RequireComponent(typeof(Toggle))]
 public class AgentToggleScript : MonoBehaviour
 {
-    [SerializeField] private Toggle m_agentToggle;
-    [SerializeField] private Toggle m_overlayToggle;
-    [SerializeField] private Toggle m_visibilityToggle;
-    [SerializeField] private Slider m_speedSlider;
-    [SerializeField] private Text m_agentText;
+    [SerializeField] private Toggle m_agentToggle = null;
+    [SerializeField] private Toggle m_overlayToggle = null;
+    [SerializeField] private Toggle m_visibilityToggle = null;
+    [SerializeField] private Slider m_speedSlider = null;
+    [SerializeField] private Text m_agentText = null;
 
     public bool IsVisibilityToggleOn { get { return m_visibilityToggle.isOn; } }
     public bool IsOverlayToggleOn { get { return m_overlayToggle.isOn; } }

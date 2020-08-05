@@ -6,7 +6,7 @@ using AStar;
 public class EuclideanGrid : AStarGrid
 {
     [Header("2D Euclidean tile size")]
-    [SerializeField] private Vector2 m_tileSize;
+    [SerializeField] private Vector2 m_tileSize = new Vector2(0,0);
     public override Vector2 TileSize { get { return m_tileSize; } }
     public override Vector2 GridHBound { get { return new Vector2(hSize.x * TileSize.x, hSize.y * TileSize.y); } }
 

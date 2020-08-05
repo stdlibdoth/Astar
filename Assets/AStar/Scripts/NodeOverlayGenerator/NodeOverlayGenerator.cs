@@ -6,7 +6,7 @@ using AStar;
 public class NodeOverlayGenerator : MonoBehaviour
 {
 
-    [SerializeField] private NodeOverlayPool m_poolPrefab;
+    [SerializeField] private NodeOverlayPool m_poolPrefab = null;
     private static Dictionary<NodeOverlay, NodeOverlayPool> m_overlayPoolMap;
 
     private static NodeOverlayGenerator m_singleton = null;

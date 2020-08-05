@@ -7,7 +7,7 @@ namespace AStar
     [RequireComponent(typeof(Rigidbody))]
     public class AstarBlock : MonoBehaviour
     {
-        [SerializeField] private string m_tileTag;
+        [SerializeField] private string m_tileTag = null;
         private HashSet<AStarTile> m_tiles;
 
 

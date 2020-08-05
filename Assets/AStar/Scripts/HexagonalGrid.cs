@@ -6,7 +6,7 @@ using AStar;
 public class HexagonalGrid : AStarGrid
 {
     [Header("2D Hexagonal tile radius")]
-    [SerializeField] private float m_tileRadius;
+    [SerializeField] private float m_tileRadius = 2;
     public override Vector2 TileSize { get { return new Vector2(2*m_tileRadius,2*m_tileRadius); } }
     public override Vector2 GridHBound
     {
