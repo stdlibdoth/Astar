@@ -21,10 +21,6 @@ namespace AStar
             Dictionary<AStarTile, AStarNode> tile_nodes = new Dictionary<AStarTile, AStarNode>();
             startnode.EvaluateNode(startnode, targetnode);
             open_nodes.Add(startnode);
-<<<<<<< HEAD
-            AStarNode smallestNode = startnode;
-=======
->>>>>>> parent of a302dbe... Revert "Revert "Revert "Revert "Optimize performance""""
             tile_nodes.Add(startnode.Tile, startnode);
             tile_nodes.Add(targetnode.Tile, targetnode);
             AStarNode current = startnode;
@@ -33,11 +29,7 @@ namespace AStar
                 current = open_nodes[0];
                 foreach (AStarNode node in open_nodes)
                 {
-<<<<<<< HEAD
-                    if (node.F - current.F < -0.01f)
-=======
                     if (node.F - current.F < -0.0001f)
->>>>>>> parent of a302dbe... Revert "Revert "Revert "Revert "Optimize performance""""
                     {
                         current = node;
                     }
