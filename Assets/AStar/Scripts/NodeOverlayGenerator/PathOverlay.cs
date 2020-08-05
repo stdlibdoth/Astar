@@ -80,7 +80,8 @@ namespace AStar
 
         private void OnDestroy()
         {
-            Destroy(m_lineOverlay.gameObject);
+            if(m_lineOverlay!= null)
+                Destroy(m_lineOverlay.gameObject);
         }
     }
 }

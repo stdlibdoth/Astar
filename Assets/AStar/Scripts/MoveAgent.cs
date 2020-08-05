@@ -234,7 +234,6 @@ namespace AStar
 
                 if (m_pathOverlay)
                     m_pathOverlay.UpdateOverlay(m_tempPath);
-
             }
             else if (AgentState == AgentState.ARRIVING)
             {
