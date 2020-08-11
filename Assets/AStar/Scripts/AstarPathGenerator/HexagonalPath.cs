@@ -7,7 +7,7 @@ namespace AStar
 {
     public class HexagonalPath : AStarPath
     {
-        public HexagonalPath(HexagonalGrid grid, AStarTile start, AStarTile target) : base(grid, start, target)
+        public HexagonalPath(HexagonalGrid grid, AStarTile start, AStarTile target, MoveAgent agent = null) : base(grid, start, target,agent)
         {
         }
 
@@ -54,7 +54,7 @@ namespace AStar
                 {
                     foreach (var e_t in eval_tiles)
                     {
-                        if (e_t.TileType != TileType.BLOCK && e_t.TileType != TileType.AGENT && e_t != startnode.tile)
+                        if (e_t.TileType != TileType.BLOCK && (e_t.Agent == agent || e_t.Agent == null) && e_t != startnode.tile)
                         {
                             if (!tile_nodes.ContainsKey(e_t) || tile_nodes[e_t] == targetnode)
                             {
@@ -93,7 +93,6 @@ namespace AStar
                     }
                     backtrack = backtrack.ParentNode;
                 }
-                m_onPathGen.Invoke();
                 m_successful = true;
             }
         }

@@ -8,7 +8,7 @@ namespace AStar
 
     public class EuclideanPath : AStarPath
     {
-        public EuclideanPath(EuclideanGrid grid, AStarTile start, AStarTile target) : base(grid, start, target)
+        public EuclideanPath(EuclideanGrid grid, AStarTile start, AStarTile target, MoveAgent agent) : base(grid, start, target, agent)
         {
         }
 
@@ -123,19 +123,19 @@ namespace AStar
                 {
                     foreach (var e_t in eval_tiles)
                     {
-                        if (e_t.TileType != TileType.BLOCK && e_t.TileType != TileType.AGENT && e_t != startnode.tile)
+                        if (e_t.TileType != TileType.BLOCK && (e_t.Agent == agent || e_t.Agent == null) && e_t != startnode.tile)
                         {
                             if (!tile_nodes.ContainsKey(e_t) || tile_nodes[e_t] == targetnode)
                             {
                                 if (!tile_nodes.ContainsKey(e_t))
                                     tile_nodes[e_t] = new AStarNode(this, e_t, NodeType.OPEN, current);
-                                if ((e_t == tile_ne || e_t == tile_nw) && (tile_n.TileType == TileType.BLOCK || tile_n.TileType == TileType.AGENT))
+                                if ((e_t == tile_ne || e_t == tile_nw) && (tile_n.TileType == TileType.BLOCK || (tile_n.Agent != agent && tile_n.TileType ==TileType.AGENT)))
                                     tile_nodes[e_t].nodeType = NodeType.CORNER;
-                                if ((e_t == tile_ne || e_t == tile_se) && (tile_e.TileType == TileType.BLOCK || tile_e.TileType == TileType.AGENT))
+                                if ((e_t == tile_ne || e_t == tile_se) && (tile_e.TileType == TileType.BLOCK || (tile_e.Agent != agent && tile_e.TileType == TileType.AGENT)))
                                     tile_nodes[e_t].nodeType = NodeType.CORNER;
-                                if ((e_t == tile_se || e_t == tile_sw) && (tile_s.TileType == TileType.BLOCK || tile_s.TileType == TileType.AGENT))
+                                if ((e_t == tile_se || e_t == tile_sw) && (tile_s.TileType == TileType.BLOCK || (tile_s.Agent != agent && tile_s.TileType == TileType.AGENT)))
                                     tile_nodes[e_t].nodeType = NodeType.CORNER;
-                                if ((e_t == tile_nw || e_t == tile_sw) && (tile_w.TileType == TileType.BLOCK || tile_w.TileType == TileType.AGENT))
+                                if ((e_t == tile_nw || e_t == tile_sw) && (tile_w.TileType == TileType.BLOCK || (tile_w.Agent != agent && tile_w.TileType == TileType.AGENT)))
                                     tile_nodes[e_t].nodeType = NodeType.CORNER;
 
                                 if (tile_nodes[e_t].nodeType == NodeType.OPEN)
@@ -151,13 +151,13 @@ namespace AStar
                             else if (tile_nodes[e_t].nodeType == NodeType.OPEN)
                             {
                                 bool check = true;
-                                if (tile_n && (tile_n.TileType == TileType.BLOCK || tile_n.TileType == TileType.AGENT))
+                                if (tile_n && (tile_n.TileType == TileType.BLOCK || (tile_n.Agent != agent && tile_n.TileType == TileType.AGENT)))
                                     check = (e_t != tile_ne && e_t != tile_nw);
-                                if (tile_e && (tile_e.TileType == TileType.BLOCK || tile_e.TileType == TileType.AGENT))
+                                if (tile_e && (tile_e.TileType == TileType.BLOCK || (tile_e.Agent != agent && tile_e.TileType == TileType.AGENT)))
                                     check = check && (e_t != tile_ne && e_t != tile_se);
-                                if (tile_s && (tile_s.TileType == TileType.BLOCK || tile_s.TileType == TileType.AGENT))
+                                if (tile_s && (tile_s.TileType == TileType.BLOCK || (tile_s.Agent != agent && tile_s.TileType == TileType.AGENT)))
                                     check = check && (e_t != tile_se && e_t != tile_sw);
-                                if (tile_w && (tile_w.TileType == TileType.BLOCK || tile_w.TileType == TileType.AGENT))
+                                if (tile_w && (tile_w.TileType == TileType.BLOCK || (tile_w.Agent != agent && tile_w.TileType == TileType.AGENT)))
                                     check = check && (e_t != tile_nw && e_t != tile_sw);
                                 if (check)
                                     tile_nodes[e_t].EvaluateNode(current, targetnode);
@@ -181,7 +181,6 @@ namespace AStar
                     }
                     backtrack = backtrack.ParentNode;
                 }
-                m_onPathGen.Invoke();
                 m_successful = true;
             }
         }

@@ -132,8 +132,6 @@ public class ControlPanelScript : MonoBehaviour
 
             float x_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.x;
             float y_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.y;
-            print(x_ref);
-            print(y_ref);
 
             Camera.main.orthographicSize = x_ref > y_ref ? x_ref : y_ref;
             Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
@@ -187,8 +185,8 @@ public class ControlPanelScript : MonoBehaviour
         {
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                if(t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
-                    t.GetComponent<AgentToggleScript>().Agent.IsDiscrete = true;
+                if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
+                    t.GetComponent<AgentToggleScript>().Agent.Halt();
             }
         });
 

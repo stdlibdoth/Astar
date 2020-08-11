@@ -5,9 +5,9 @@ using AStar;
 
 public class HexagonalPathGenerator : PathGenerator
 {
-    public override AStarPath GeneratePath<T>(T grid, AStarTile start, AStarTile target)
+    public override AStarPath GeneratePath<T>(T grid, AStarTile start, AStarTile target, MoveAgent agent)
     {
-        return new HexagonalPath(grid as HexagonalGrid, start, target);
+        return new HexagonalPath(grid as HexagonalGrid, start, target,agent);
     }
 
 }

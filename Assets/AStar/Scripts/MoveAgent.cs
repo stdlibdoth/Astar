@@ -4,17 +4,19 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Threading;
 using AStar;
+using Unity.Jobs;
 
 namespace AStar
 {
+    [System.Serializable]
     public enum AgentState
     {
         IDLE,       //Initial state
-        PAUSED,     //Step by step movement, waiting for resume command
+        //PAUSED,     //Step by step movement, waiting for resume command
         TARGETING,  //Finding destination tile
         TARGETED,   //Destination tile set and fund
         ROUTING,    //Finding path, waiting for A* algorithm to finish
-        MOVING,     //Agent is moving
+        //MOVING,     //Agent is moving
         ROUTED,     //A* finished
         ARRIVING,   //Arrived at destination. Sending arrived message at next frame
         ARRIVED,    //Arrived. Message sent
@@ -25,6 +27,7 @@ namespace AStar
     {
         protected UnityEvent m_onArrival;
         protected int m_id;
+        protected List<AStarTile> m_waypointTiles;
 
         [Header("Optional")]
         [SerializeField] protected PathOverlay m_pathOverlay = null;
@@ -34,12 +37,20 @@ namespace AStar
         [SerializeField] protected bool m_descreteMovement = false;
         [Header("Path Generator")]
         [SerializeField] protected PathGenerator m_pathGenerator = null;
+        [Header("Obstacle Avoidance Mode")]
+        [SerializeField] public OAMode m_oaMode = OAMode.ACTIVE;
 
         private AStarPath m_tempPath;
         private AStarTile m_targetTile;
         private AStarTile m_currentTile;
         private Thread m_astarThread;
         private bool m_overlayUpdated;
+        private float m_astarTime;
+        private float m_deltaTime;
+        private float m_instantSpeed;
+        private Vector3 m_lastLocation;
+        private int m_routeCount;
+        private bool m_astarFlag;
 
         public UnityEvent OnArrival { get { return m_onArrival; } }
         public AgentState AgentState { get; private set; }
@@ -65,7 +76,6 @@ namespace AStar
             }
         }
         public AStarGrid Grid { get; private set; }
-        public List<AStarTile> PathTiles { get { return m_tempPath.PathTiles; } }
         public AStarTile CurrentTile
         {
             get
@@ -85,8 +95,8 @@ namespace AStar
         {
             get
             {
-                if (m_tempPath != null && m_tempPath.PathTiles.Count > 1)
-                    return m_tempPath.PathTiles[1];
+                if (m_waypointTiles != null && m_waypointTiles.Count > 1)
+                    return m_waypointTiles[1];
                 else
                     return null;
             }
@@ -101,6 +111,15 @@ namespace AStar
 
         private static int m_agentCount = 0;
         private static Dictionary<int, MoveAgent> m_agents = new Dictionary<int, MoveAgent>();
+
+        [System.Serializable]
+        public enum OAMode
+        {
+            PASSIVE,
+            ACTIVE,
+        }
+
+
 
         public static T1 AddAgent<T1,T2>(GameObject g_obj) where T1:MoveAgent where T2:PathGenerator
         {
@@ -176,12 +195,22 @@ namespace AStar
                 AgentState = AgentState.TARGETING;
                 if (arrival_action != null)
                     m_onArrival.AddListener(arrival_action);
+
+
+                if (m_astarThread != null)
+                    m_astarThread.Abort();
+
+                s_tile.TileType = TileType.AGENT;
+                s_tile.Agent = this;
+                m_astarTime = 0;
+                m_astarThread = new Thread(TargetRoute);
+                m_astarThread.Start();
             }
 
         }
 
-        //Callded in every frame if Agent's state is 'Moving'. Overwrite to customize the movement behavior
-        protected abstract void Move();
+        //Callded in every frame if at least two way point exist. Overwrite to customize the move behavior
+        protected abstract void Move(List<AStarTile> way_points);
 
         public void ActiveOverlay(bool active)
         {
@@ -192,11 +221,37 @@ namespace AStar
         //for descrete movement
         public void ResumeMovement()
         {
-            if (AgentState == AgentState.PAUSED)
-                AgentState = AgentState.ROUTING;
-            else if (AgentState == AgentState.TARGETED)
+            m_astarFlag = true;
+        }
+
+
+        public void Halt()
+        {
+            if (AgentState == AgentState.TARGETING || AgentState == AgentState.IDLE)
+                return;
+            if (Mathf.Abs(m_instantSpeed) <= float.Epsilon && m_tempPath.Successful)
+                return;
+
+            m_descreteMovement = true;
+            if (m_oaMode == OAMode.PASSIVE)
             {
-                AgentState = AgentState.ROUTED;
+                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+
+                //remove excessive tiles in the path caused by delay
+                int index = -1;
+                do
+                {
+                    index++;
+                } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
+
+                m_waypointTiles.RemoveRange(0, index);
+                if (m_waypointTiles.Count > 2)
+                    m_waypointTiles.RemoveRange(2, m_waypointTiles.Count - 2);
+            }
+            else if (m_oaMode == OAMode.ACTIVE)
+            {
+                if (m_waypointTiles != null && m_waypointTiles.Count >= 2)
+                    m_astarFlag = true;
             }
         }
 
@@ -212,141 +267,236 @@ namespace AStar
         //movement state machine
         private void Update()
         {
-            if (AgentState == AgentState.TARGETING)
+//            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+//            stopWatch.Start();
+            m_deltaTime = Time.unscaledDeltaTime;
+            m_instantSpeed = Vector3.Distance(m_moveTrans.position, m_lastLocation) / m_deltaTime;
+            m_lastLocation = m_moveTrans.position;
+
+            if (AgentState == AgentState.ROUTING || AgentState == AgentState.TARGETING)
             {
-                if (m_astarThread != null)
-                    m_astarThread.Abort();
-                m_astarThread = new Thread(() => { });
-                m_astarThread.Start();
-
-                AStarTile s_tile = CurrentTile as AStarTile;
-                s_tile.TileType = TileType.AGENT;
-                s_tile.Agent = this;
-                if (NextTile != null && NextTile.Agent == this && !m_descreteMovement)
-                    NextTile.TileType = TileType.BLANK;
-                m_tempPath = m_pathGenerator.GeneratePath(s_tile.Grid, s_tile, m_targetTile);
-                if (!m_descreteMovement)
-                {
-                    AgentState = AgentState.ROUTED;
-                }
-                else
-                    AgentState = AgentState.TARGETED;
-
-                if (m_pathOverlay)
-                    m_pathOverlay.UpdateOverlay(m_tempPath);
+                m_astarTime += Time.unscaledDeltaTime;
             }
-            else if (AgentState == AgentState.ARRIVING)
+            if (AgentState == AgentState.ARRIVING)
             {
                 AgentState = AgentState.ARRIVED;
                 m_onArrival.Invoke();
                 m_onArrival.RemoveAllListeners();
             }
-            else if (AgentState != AgentState.ARRIVED && AgentState != AgentState.TARGETING && AgentState != AgentState.TARGETED)
-            {
-                float dis = Vector3.Distance(NextTile.transform.position, m_moveTrans.position);
 
+            else if (AgentState != AgentState.ARRIVED && AgentState != AgentState.TARGETING && AgentState != AgentState.IDLE)
+            {
                 if (m_pathOverlay && AgentState == AgentState.ROUTED && m_tempPath.Successful && !m_overlayUpdated)
                 {
                     m_pathOverlay.UpdateOverlay(m_tempPath);
                     m_overlayUpdated = true;
                 }
 
-                if (m_tempPath.Successful && AgentState == AgentState.ROUTED && dis >= 0.001f)
-                {
-                    NextTile.TileType = TileType.AGENT;
-                    NextTile.Agent = this;
-                    AgentState = AgentState.MOVING;
-                }
-                else if (m_tempPath.Successful && dis < 0.001f && AgentState == AgentState.MOVING)
-                {
-                    //clear last tile
-                    CurrentTile.TileType = TileType.BLANK;
 
-                    //update current tile
-                    m_currentTile = m_tempPath.PathTiles[1];
-                    AgentState = AgentState.ROUTING;
-                    if (m_descreteMovement)
-                        AgentState = AgentState.PAUSED;
-                }
-
-                if (AgentState == AgentState.MOVING)
+                if(m_waypointTiles.Count>=2)
                 {
-                    Move();
-                }
-
-
-                if (m_astarThread != null && !m_astarThread.IsAlive)
-                {
-                    if (m_tempPath.Successful)
+                    float dist = Vector3.Distance(m_waypointTiles[1].transform.position, m_moveTrans.position);
+                    if (dist < 0.01f)
                     {
-                        if (CurrentTile == m_targetTile)
-                            AgentState = AgentState.ARRIVING;
-                        else if (dis < 0.001f && AgentState == AgentState.ROUTING && NextTile != m_targetTile)
+                        m_waypointTiles.RemoveAt(0);
+                        m_currentTile = m_waypointTiles[0];
+                    }
+                    
+                    //Passive mode. Start finding path only if the original path is blocked
+                    if(m_oaMode == OAMode.PASSIVE)
+                    {
+                        m_astarFlag = false;
+                        int count = m_waypointTiles.Count;
+                        int i = 1;
+                        while (i < count)
                         {
-                            CurrentTile.TileType = TileType.AGENT;
-                            CurrentTile.Agent = this;
-
-                            m_astarThread = new Thread(AstarUpdateThread1);
-                            m_astarThread.Start();
+                            if (m_waypointTiles[i].TileType == TileType.BLOCK || (m_waypointTiles[i].TileType == TileType.AGENT && m_waypointTiles[i].Agent != this))
+                            {
+                                m_astarFlag = true;
+                                break;
+                            }
+                            i++;
                         }
                     }
 
-                    //if stuck, keep finding path
-                    else if (!m_tempPath.Successful && AgentState == AgentState.ROUTED)
+                    //Active mode. Start path finding when the distance to the next tile is small enough
+                    if (!m_descreteMovement && m_oaMode == OAMode.ACTIVE)
                     {
-                        m_astarThread = new Thread(AstarUpdateThread2);
-                        m_astarThread.Start();
+                        if (dist <= m_instantSpeed * m_astarTime + 0.01f && m_routeCount == 0)
+                        {
+                            m_astarFlag = true;
+                            m_routeCount++;
+                        }
+                        else if(dist > m_instantSpeed * m_astarTime + 0.01f)
+                        {
+                            m_astarFlag = false;
+                            m_routeCount = 0;
+                        }
+                    }
+
+                    List<AStarTile> adjacent = Grid.GetAdjacentTiles(m_currentTile);
+                    foreach (AStarTile tile in adjacent)
+                    {
+                        if (tile.Agent == this)
+                        {
+                            tile.Agent = null;
+                            tile.TileType = TileType.BLANK;
+                        }
+                    }
+                    if (m_waypointTiles.Count > 1 && m_waypointTiles[1].Agent == null)
+                    {
+                        m_waypointTiles[1].Agent = this;
+                        m_waypointTiles[1].TileType = TileType.AGENT;
+                    }
+                }
+
+                //move agent
+                if (m_waypointTiles.Count >= 2)
+                {
+                    Move(m_waypointTiles);
+                }
+
+
+                if (CurrentTile == m_targetTile)
+                    AgentState = AgentState.ARRIVING;
+                else
+                {
+                    //start pathfinding thread
+                    if (m_astarThread != null && !m_astarThread.IsAlive && m_astarFlag)
+                    {
+                        if (m_tempPath.Successful)
+                        {
+                            m_astarTime = 0;
+                            AgentState = AgentState.ROUTING;
+                            m_astarThread = new Thread(AstarWorker1);
+                            m_astarThread.Start();
+                        }
+                        else
+                        {
+                            m_astarThread = new Thread(AstarWorker2);
+                            m_astarThread.Start();
+                        }
                     }
                 }
             }
+           // print(stopWatch.ElapsedMilliseconds);
         }
 
-        private void AstarUpdateThread1()
+
+
+        private void TargetRoute()
         {
-            //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            //stopWatch.Start();
-
-            m_tempPath = m_pathGenerator.GeneratePath(Grid, CurrentTile, m_targetTile);
+            //float startTime = Time.unscaledTime;
+            m_tempPath = m_pathGenerator.GeneratePath(Grid, CurrentTile, m_targetTile, this);
             m_overlayUpdated = false;
-            if (m_tempPath.Successful)
-            {
-                NextTile.TileType = TileType.AGENT;
-                NextTile.Agent = this;
-            }
-            else
-            {
-                CurrentTile.TileType = TileType.AGENT;
-                CurrentTile.Agent = this;
-            }
 
+            if (!m_descreteMovement && m_tempPath.Successful)
+            {
+                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+                int index = -1;
+                do
+                {
+                    index++;
+                } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
+
+                m_waypointTiles.RemoveRange(0, index);
+            }
+            else if (m_descreteMovement && m_tempPath.Successful)
+            {
+                m_waypointTiles = new List<AStarTile>();
+            }
+            else if (!m_tempPath.Successful)
+            {
+                if (m_waypointTiles != null)
+                {
+                    m_waypointTiles[0].TileType = TileType.AGENT;
+                    m_waypointTiles[0].Agent = this;
+                    m_waypointTiles[1].TileType = TileType.BLANK;
+                }
+                m_waypointTiles = new List<AStarTile>();
+            }
+            m_astarFlag = !m_descreteMovement;
+            //m_astarTime = Time.unscaledTime - startTime;
+            if (m_astarTime < m_deltaTime && m_tempPath.Successful)
+                m_astarFlag = false;
+            AgentState = AgentState.TARGETED;
+        }
+
+        private void AstarWorker1()
+        {
+            //Debug.Log("1");
+            m_tempPath = m_pathGenerator.GeneratePath(Grid, CurrentTile, m_targetTile,this);
+            m_overlayUpdated = false;
+            if (!m_descreteMovement && m_tempPath.Successful)
+            {
+                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+
+                //remove excessive tiles in the path caused by delay
+                int index = -1;
+                do
+                {
+                    index++;
+                } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
+
+                m_waypointTiles.RemoveRange(0, index);
+            }
+            else if (m_descreteMovement && m_tempPath.Successful)
+            {
+                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+
+                //remove excessive tiles in the path caused by delay
+                int index = -1;
+                do
+                {
+                    index++;
+                } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
+
+                m_waypointTiles.RemoveRange(0, index);
+                if (m_waypointTiles.Count > 2)
+                    m_waypointTiles.RemoveRange(2, m_waypointTiles.Count - 2);
+            }
+            else if (!m_tempPath.Successful)
+            {
+                m_waypointTiles = new List<AStarTile>();
+            }
+            m_astarFlag = !m_descreteMovement;
+            if (m_astarTime < m_deltaTime && m_tempPath.Successful)
+                m_astarFlag = false;
             AgentState = AgentState.ROUTED;
             //print(stopWatch.ElapsedMilliseconds);
         }
 
-        private void AstarUpdateThread2()
+        private void AstarWorker2()
         {
             //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             //stopWatch.Start();
-            m_tempPath = m_pathGenerator.GeneratePath(Grid, CurrentTile, m_targetTile);
-            if (m_tempPath.Successful)
+            AgentState = AgentState.ROUTING;
+            m_tempPath = m_pathGenerator.GeneratePath(Grid, CurrentTile, m_targetTile,this);
+
+            if (!m_descreteMovement && m_tempPath.Successful)
             {
-                NextTile.TileType = TileType.AGENT;
-                NextTile.Agent = this;
+                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+                int index = -1;
+                do
+                {
+                    index++;
+                } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
+                m_waypointTiles.RemoveRange(0, index);
             }
-            else
+            else if (m_descreteMovement && m_tempPath.Successful)
             {
-                CurrentTile.TileType = TileType.AGENT;
-                CurrentTile.Agent = this;
+                m_waypointTiles = new List<AStarTile>();
+                m_waypointTiles.Add(m_tempPath.PathTiles[0]);
+                m_waypointTiles.Add(m_tempPath.PathTiles[1]);
             }
-            AgentState = AgentState.ROUTED;
+
             //print(stopWatch.ElapsedMilliseconds);
         }
 
         private void OnDestroy()
         {
-
             CurrentTile.TileType = TileType.BLANK;
-            if (AgentState != AgentState.IDLE && NextTile.Agent == this)
+            if (AgentState != AgentState.IDLE && NextTile && NextTile.Agent == this)
                 NextTile.TileType = TileType.BLANK;
         }
     }

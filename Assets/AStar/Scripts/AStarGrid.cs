@@ -58,6 +58,8 @@ namespace AStar
             return x >= -hSize.x && x <= hSize.x - 1 && y <= hSize.y - 1 && y >= -hSize.y;
         }
 
+        public abstract List<AStarTile> GetAdjacentTiles(AStarTile tile);
+
         //public int NodeDistance(AStarNode a, AStarNode b)
         //{
         //    //return Mathf.FloorToInt(Mathf.Sqrt((a.Coord_x - b.Coord_x) * (a.Coord_x - b.Coord_x) + (a.Coord_z - b.Coord_z) * (a.Coord_z - b.Coord_z)));

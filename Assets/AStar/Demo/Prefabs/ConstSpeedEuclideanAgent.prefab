@@ -140,6 +140,7 @@ MonoBehaviour:
   m_moveTrans: {fileID: 884220325778017326}
   m_descreteMovement: 0
   m_pathGenerator: {fileID: 8000922646968193421}
+  m_oaMode: 0
   constSpeed: 1
   m_nameTag: {fileID: 5807420817306043855}
 --- !u!114 &800462111247003252

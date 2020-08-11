@@ -49,7 +49,7 @@ namespace AStar
             float h = m_path.Grid.NodeDistance(this, parent) + parent.h;
             float g = m_path.Grid.NodeDistance(this, target);
             float f = this.h + this.g;
-            if (g + h - f > 0.0001f && f > 0.0001f)
+            if (g + h - f > 0.001f && f > 0.001f)
             {
                 return false;
             }

@@ -5,5 +5,5 @@ using AStar;
 
 public abstract class PathGenerator:MonoBehaviour
 {
-    public abstract AStarPath GeneratePath<T>(T grid, AStarTile start, AStarTile target) where T : AStarGrid;
+    public abstract AStarPath GeneratePath<T>(T grid, AStarTile start, AStarTile target, MoveAgent agent) where T : AStarGrid;
 }

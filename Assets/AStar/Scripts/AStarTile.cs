@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using AStar;
+using Battlehub.Dispatcher;
 
 namespace AStar
 {
@@ -18,9 +19,9 @@ namespace AStar
     [RequireComponent(typeof(Collider))]
     public class AStarTile : MonoBehaviour
     {
-        //[Header("References")]
-        //[SerializeField] protected Material m_blankMat = null;
-        //[SerializeField] protected Material m_blockMat = null;
+        [Header("References")]
+        [SerializeField] protected Material m_blankMat = null;
+        [SerializeField] protected Material m_blockMat = null;
 
 
         public MoveAgent Agent { get; set; }
@@ -30,25 +31,27 @@ namespace AStar
             get { return m_tileType; }
             set
             {
-                    m_tileType = value;
-                    ////MeshRenderer mr = GetComponentInChildren<MeshRenderer>();
-                    ////if (!mr)
-                    ////    return;
-                    //switch (value)
-                    //{
-                    //    case TileType.PATH:
-                    //    case TileType.BLANK:
-                    //        //mr.material = m_blankMat;
-                    //        //m_tileMesh.transform.localPosition = new Vector3(0, m_tileMesh.transform.localScale.y*0.5f, 0);
-                    //        break;
-                    //    case TileType.AGENT:
-                    //    case TileType.BLOCK:
-                    //        //mr.material = m_blockMat;
-                    //        //m_tileMesh.transform.localPosition = new Vector3(0, 0.05f, 0);
-                    //        break;
-                    //    default:
-                    //        break;
-                    //}
+                m_tileType = value;
+                Dispatcher.Current.BeginInvoke(() =>
+                {
+                    MeshRenderer mr = GetComponentInChildren<MeshRenderer>();
+                    if (!mr)
+                        return;
+                    switch (value)
+                    {
+                        case TileType.PATH:
+                        case TileType.BLANK:
+                            mr.material = m_blankMat;
+                            //m_tileMesh.transform.localPosition = new Vector3(0, m_tileMesh.transform.localScale.y * 0.5f, 0);
+                            break;
+                        case TileType.AGENT:
+                        case TileType.BLOCK:
+                            mr.material = m_blockMat;
+                            break;
+                        default:
+                            break;
+                    }
+                });
             }
         }
         public int X { get; protected set; }

@@ -17,7 +17,7 @@ public class HexagonalGrid : AStarGrid
         }
     }
 
-    public List<AStarTile> GetAdjacentTiles(AStarTile tile)
+    public override List<AStarTile> GetAdjacentTiles(AStarTile tile)
     {
         List<AStarTile> tiles = new List<AStarTile>();
         if (tile.Grid != this)
@@ -45,7 +45,6 @@ public class HexagonalGrid : AStarGrid
             tiles.Add(GetTile(tile.X + 1, tile.Y));
         if (CheckBoundary(tile.X - 1, tile.Y))
             tiles.Add(GetTile(tile.X - 1, tile.Y));
-
         return tiles;
     }
 
