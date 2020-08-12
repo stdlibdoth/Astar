@@ -44,6 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5709484b0334eff43a118c9a3418da69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_blankMat: {fileID: 0}
+  m_blockMat: {fileID: 0}
+  m_astarLayer:
+    layerID: BLANK
+  m_initialLayer:
+    layerID: 
 --- !u!65 &7396652068422935090
 BoxCollider:
   m_ObjectHideFlags: 0

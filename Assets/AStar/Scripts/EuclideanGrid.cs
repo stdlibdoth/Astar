@@ -63,4 +63,21 @@ public class EuclideanGrid : AStarGrid
             tiles.Add(GetTile(tile.X - 1, tile.Y + 1));
         return tiles;
     }
+
+    public List<AStarTile> GetAdjacentTilesWithoutDiagonal(AStarTile tile)
+    {
+        List<AStarTile> tiles = new List<AStarTile>();
+        if (tile.Grid != this)
+            return tiles;
+
+        if (CheckBoundary(tile.X, tile.Y + 1))
+            tiles.Add(GetTile(tile.X, tile.Y + 1));
+        if (CheckBoundary(tile.X + 1, tile.Y))
+            tiles.Add(GetTile(tile.X + 1, tile.Y));
+        if (CheckBoundary(tile.X, tile.Y - 1))
+            tiles.Add(GetTile(tile.X, tile.Y - 1));
+        if (CheckBoundary(tile.X - 1, tile.Y))
+            tiles.Add(GetTile(tile.X - 1, tile.Y));
+        return tiles;
+    }
 }

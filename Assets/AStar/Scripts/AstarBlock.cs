@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using AStar;
 
 namespace AStar
 {
     [RequireComponent(typeof(Rigidbody))]
     public class AstarBlock : MonoBehaviour
     {
+        [SerializeField] private AStarLayer m_astarLayer;
         [SerializeField] private string m_tileTag = null;
         private HashSet<AStarTile> m_tiles;
 
@@ -27,7 +29,7 @@ namespace AStar
         {
             foreach (var tile in m_tiles)
             {
-                tile.TileType = TileType.BLANK;
+                tile.Layer = tile.InitialLayer;
             }
         }
 
@@ -35,7 +37,7 @@ namespace AStar
         {
             foreach (var tile in m_tiles)
             {
-                tile.TileType = TileType.BLANK;
+                tile.Layer = tile.InitialLayer;
             }
         }
 
@@ -44,7 +46,7 @@ namespace AStar
             if (other.CompareTag(m_tileTag))
             {
                 AStarTile tile = other.GetComponent<AStarTile>();
-                tile.TileType = TileType.BLOCK;
+                tile.Layer = m_astarLayer;
                 m_tiles.Add(tile);
             }
         }
@@ -57,7 +59,7 @@ namespace AStar
                 if (t)
                 {
                     m_tiles.Remove(t);
-                    t.TileType = TileType.BLANK;
+                    t.Layer = t.InitialLayer;
                 }
             }
         }

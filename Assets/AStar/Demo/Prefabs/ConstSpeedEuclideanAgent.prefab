@@ -136,11 +136,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67a71f1bb4f71474883db776d3ac7058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_tileLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
   m_pathOverlay: {fileID: 800462111247003252}
   m_moveTrans: {fileID: 884220325778017326}
-  m_descreteMovement: 0
+  descreteMovement: 0
   m_pathGenerator: {fileID: 8000922646968193421}
-  m_oaMode: 0
+  oaMode: 0
+  m_obstacleSetting: {fileID: 11400000, guid: f5af874747c3d8e4aac533890a295a72, type: 2}
+  m_astarLayer:
+    layerID: 
   constSpeed: 1
   m_nameTag: {fileID: 5807420817306043855}
 --- !u!114 &800462111247003252

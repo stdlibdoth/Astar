@@ -175,7 +175,7 @@ public class ControlPanelScript : MonoBehaviour
             {
                 if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
                 {
-                    t.GetComponent<AgentToggleScript>().Agent.IsDiscrete = false;
+                    t.GetComponent<AgentToggleScript>().Agent.descreteMovement = false;
                     t.GetComponent<AgentToggleScript>().Agent.ResumeMovement();
                 }
             }
@@ -196,7 +196,7 @@ public class ControlPanelScript : MonoBehaviour
             {
                 if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
                 {
-                    t.GetComponent<AgentToggleScript>().Agent.IsDiscrete = true;
+                    t.GetComponent<AgentToggleScript>().Agent.descreteMovement = true;
                     t.GetComponent<AgentToggleScript>().Agent.ResumeMovement();
                 }
             }
@@ -289,7 +289,7 @@ public class ControlPanelScript : MonoBehaviour
                     if (Physics.Raycast(r1, out hit1, LayerMask.GetMask("AstarTile")))
                     {
                         AStarTile tile = hit1.transform.GetComponent<AStarTile>();
-                        if (tile && tile.TileType != TileType.BLOCK)
+                        if (tile && tile.Layer.layerID != "BLOCK")
                         {
                             m_tempStartTile = tile;
                             m_line = Instantiate(m_linePrefab);
@@ -306,7 +306,7 @@ public class ControlPanelScript : MonoBehaviour
                 if (Physics.Raycast(r2, out hit2, LayerMask.GetMask("AstarTile")))
                 {
                     AStarTile tile = hit2.transform.GetComponent<AStarTile>();
-                    if (tile && tile.TileType != TileType.BLOCK && tile != tempTargetTile)
+                    if (tile && tile.Layer.layerID != "BLOCK" && tile != tempTargetTile)
                     {
                         m_line.SetPosition(1, m_line.transform.InverseTransformPoint(tile.transform.position) + new Vector3(0,0.03f,0));
                         if (Input.GetMouseButtonDown(0))
@@ -341,7 +341,7 @@ public class ControlPanelScript : MonoBehaviour
                     if (Physics.Raycast(r3, out hit3, 500, LayerMask.GetMask("AstarTile")))
                     {
                         AStarTile tile = hit3.transform.GetComponent<AStarTile>();
-                        if (tile && tile.TileType == TileType.BLANK)
+                        if (tile && tile.Layer.layerID == "BLANK")
                         {
                             Transform t = Instantiate(m_blockPrefab, tile.transform.position, Quaternion.identity).transform;
                             t.localScale = new Vector3(tile.Grid.TileSize.x * 0.98f, tile.Grid.TileSize.x, tile.Grid.TileSize.y * 0.98f);

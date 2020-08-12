@@ -61,6 +61,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_blankMat: {fileID: 2100000, guid: 069f1b18802afbe49b8cfcd277fdf794, type: 2}
   m_blockMat: {fileID: 2100000, guid: dd3e2d93c8075c349aa510ddeae53b62, type: 2}
+  astarLayer:
+    layerID: BLANK
 --- !u!1001 &9141070539753978255
 PrefabInstance:
   m_ObjectHideFlags: 0

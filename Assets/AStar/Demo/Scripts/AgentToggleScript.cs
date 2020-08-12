@@ -10,6 +10,7 @@ public class AgentToggleScript : MonoBehaviour
     [SerializeField] private Toggle m_agentToggle = null;
     [SerializeField] private Toggle m_overlayToggle = null;
     [SerializeField] private Toggle m_visibilityToggle = null;
+    [SerializeField] private Toggle m_modeToggle = null;
     [SerializeField] private Slider m_speedSlider = null;
     [SerializeField] private Text m_agentText = null;
 
@@ -29,7 +30,6 @@ public class AgentToggleScript : MonoBehaviour
         m_agent = (ConstantSpeedAgent)agent;
         m_agentText.text = agent.name;
 
-
         m_agentToggle.onValueChanged.AddListener((bool check) =>
         {
             if (check)
@@ -43,6 +43,14 @@ public class AgentToggleScript : MonoBehaviour
             m_overlayToggle.interactable = visible;
             if (!visible && m_overlayToggle.isOn)
                 m_overlayToggle.isOn = false;
+        });
+
+
+        m_modeToggle.SetIsOnWithoutNotify(m_agent.oaMode == MoveAgent.OAMode.PASSIVE);
+
+        m_modeToggle.onValueChanged.AddListener((bool passive) =>
+        {
+            m_agent.oaMode = passive ? MoveAgent.OAMode.PASSIVE : MoveAgent.OAMode.ACTIVE;
         });
 
         m_overlayToggle.onValueChanged.AddListener((bool active) =>

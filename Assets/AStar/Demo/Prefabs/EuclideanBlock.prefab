@@ -125,6 +125,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: BLOCK
   m_tileTag: AstarTile
 --- !u!54 &7284597902656145198
 Rigidbody:
