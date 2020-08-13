@@ -16,3 +16,4 @@ MonoBehaviour:
     layerID: AGENT
   obstacleAstarLayers:
   - layerID: BLOCK
+  - layerID: AGENT

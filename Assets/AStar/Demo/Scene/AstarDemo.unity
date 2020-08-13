@@ -2401,7 +2401,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_text: {fileID: 1289464592}
   m_updateFreq: 1
-  m_consecSampleCount: 5
+  m_consecSampleCount: 40
 --- !u!114 &226174353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16953,6 +16953,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &1394810434
 Rigidbody:
@@ -18635,6 +18637,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &1504154513
 Rigidbody:
@@ -28204,6 +28208,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &706186887998804135
 Rigidbody:
@@ -28282,6 +28288,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &2240827215385051640
 Rigidbody:
@@ -28440,6 +28448,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &2411626051910982618
 Rigidbody:
@@ -28565,6 +28575,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &2540494050881748938
 Rigidbody:
@@ -28671,6 +28683,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &3137541280985219700
 Rigidbody:
@@ -28843,6 +28857,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &3237952382638832023
 Rigidbody:
@@ -28907,6 +28923,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &3644762824534071030
 Rigidbody:
@@ -29046,6 +29064,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &3872332258999537452
 Rigidbody:
@@ -29190,6 +29210,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &4062828138678952027
 Rigidbody:
@@ -29282,6 +29304,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &4836149467768791603
 Rigidbody:
@@ -29501,6 +29525,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &6271974565719495622
 Rigidbody:
@@ -29565,6 +29591,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &6281789912847318628
 Rigidbody:
@@ -29784,6 +29812,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &6801116005183286245
 Rigidbody:
@@ -29876,6 +29906,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &6862085599539312680
 Rigidbody:
@@ -30015,6 +30047,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &7029344523147286695
 Rigidbody:
@@ -30173,6 +30207,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &7557739556561985209
 Rigidbody:
@@ -30313,6 +30349,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &7754761392706138745
 Rigidbody:
@@ -30533,6 +30571,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &8412369024878841815
 Rigidbody:
@@ -30691,6 +30731,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &8448049819576385965
 Rigidbody:
@@ -30816,6 +30858,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &8482966414518817466
 Rigidbody:
@@ -30941,6 +30985,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbe128822937fef4b97c240e3290bb37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_astarLayer:
+    layerID: 
   m_tileTag: AstarTile
 --- !u!54 &9023903237461470722
 Rigidbody:

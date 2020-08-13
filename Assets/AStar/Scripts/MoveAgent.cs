@@ -51,10 +51,10 @@ namespace AStar
         private float m_deltaTime;
         private float m_instantSpeed;
         private Vector3 m_lastLocation;
-        private int m_routeCount;
-        private bool m_astarFlag;
-        [SerializeField]private AStarLayer m_astarLayer;
+        private bool m_astarFlag;private AStarLayer m_astarLayer;
         private List<AStarLayer> m_obstacleLayers;
+        private AStarTile m_activeModePrevNextTile;
+
 
 
         public UnityEvent OnArrival { get { return m_onArrival; } }
@@ -195,6 +195,7 @@ namespace AStar
                 s_tile.Layer = m_astarLayer;
                 s_tile.Agent = this;
                 m_astarTime = 0;
+                m_astarFlag = false;
                 m_astarThread = new Thread(TargetRoute);
                 m_astarThread.Start();
             }
@@ -274,19 +275,24 @@ namespace AStar
             }
         }
 
+
+        private void FixedUpdate()
+        {
+            m_deltaTime = Time.unscaledDeltaTime;
+            m_instantSpeed = Vector3.Distance(m_moveTrans.position, m_lastLocation) / m_deltaTime;
+            m_lastLocation = m_moveTrans.position;
+            if (AgentState == AgentState.ROUTING || AgentState == AgentState.TARGETING)
+            {
+                m_astarTime += m_deltaTime;
+            }
+        }
+
         //movement state machine
         private void Update()
         {
 //            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 //            stopWatch.Start();
-            m_deltaTime = Time.unscaledDeltaTime;
-            m_instantSpeed = Vector3.Distance(m_moveTrans.position, m_lastLocation) / m_deltaTime;
-            m_lastLocation = m_moveTrans.position;
 
-            if (AgentState == AgentState.ROUTING || AgentState == AgentState.TARGETING)
-            {
-                m_astarTime += Time.unscaledDeltaTime;
-            }
             if (AgentState == AgentState.ARRIVING)
             {
                 AgentState = AgentState.ARRIVED;
@@ -310,7 +316,7 @@ namespace AStar
                     {
                         m_waypointTiles.RemoveAt(0);
                         m_currentTile = m_waypointTiles[0];
-                    }
+                   }
                     
                     //Passive mode. Start finding path only if the original path is blocked
                     if(oaMode == OAMode.PASSIVE)
@@ -332,15 +338,15 @@ namespace AStar
                     //Active mode. Start path finding when the distance to the next tile is small enough
                     if (!descreteMovement && oaMode == OAMode.ACTIVE)
                     {
-                        if (dist <= m_instantSpeed * m_astarTime + 0.01f && m_routeCount == 0)
+                        if (m_waypointTiles.Count>=2 && dist <= m_instantSpeed * m_astarTime + 0.01f && 
+                            m_activeModePrevNextTile!= m_waypointTiles[1])
                         {
                             m_astarFlag = true;
-                            m_routeCount++;
+                            m_activeModePrevNextTile = m_waypointTiles[1];
                         }
-                        else if(dist > m_instantSpeed * m_astarTime + 0.01f)
+                        else if(m_waypointTiles.Count >= 2 && m_activeModePrevNextTile == m_waypointTiles[1])
                         {
                             m_astarFlag = false;
-                            m_routeCount = 0;
                         }
                     }
 
@@ -376,6 +382,7 @@ namespace AStar
                     {
                         if (m_tempPath.Successful)
                         {
+                            Debug.Log("P1");
                             m_astarTime = 0;
                             AgentState = AgentState.ROUTING;
                             m_astarThread = new Thread(AstarWorker1);
@@ -386,6 +393,7 @@ namespace AStar
                             m_astarThread = new Thread(AstarWorker2);
                             m_astarThread.Start();
                         }
+
                     }
                 }
             }
@@ -425,10 +433,7 @@ namespace AStar
                 }
                 m_waypointTiles = new List<AStarTile>();
             }
-            m_astarFlag = !descreteMovement;
-            //m_astarTime = Time.unscaledTime - startTime;
-            if (m_astarTime < m_deltaTime && m_tempPath.Successful)
-                m_astarFlag = false;
+            m_astarFlag = false;
             AgentState = AgentState.TARGETED;
         }
 
@@ -486,7 +491,6 @@ namespace AStar
                 m_waypointTiles.Add(m_tempPath.PathTiles[0]);
                 m_waypointTiles.Add(m_tempPath.PathTiles[1]);
             }
-
             //print(stopWatch.ElapsedMilliseconds);
         }
 
