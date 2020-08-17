@@ -47,8 +47,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_blankMat: {fileID: 2100000, guid: 069f1b18802afbe49b8cfcd277fdf794, type: 2}
   m_blockMat: {fileID: 2100000, guid: dd3e2d93c8075c349aa510ddeae53b62, type: 2}
-  astarLayer:
-    layerID: BLANK
+  m_astarLayer:
+    layerID: 
+  m_initialLayer:
+    layerID: 
 --- !u!65 &7396652068422935090
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -79,7 +81,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1987496020201256339
 Transform:
   m_ObjectHideFlags: 0

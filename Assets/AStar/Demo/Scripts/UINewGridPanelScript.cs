@@ -6,6 +6,7 @@ using AStar;
 
 public class UINewGridPanelScript : MonoBehaviour
 {
+    [SerializeField] private GameObject m_euclideanFloorPrefab = null;
     [SerializeField] private AStarGrid m_euclideanGridPrefab = null;
     [SerializeField] private AStarGrid m_hexagonalGridPrefab = null;
     [SerializeField] private AStarGrid m_premadeGridPrefab = null;
@@ -92,7 +93,14 @@ public class UINewGridPanelScript : MonoBehaviour
                 text_ref = m_idInput.text;
                 if (m_gridTypeDropdown.captionText.text == "Euclidean")
                 {
-                    AStarManager.AddGrid(m_idInput.text, m_euclideanGridPrefab, new Vector2Int(x, y));
+                    AStarGrid grid = AStarManager.AddGrid(m_idInput.text, m_euclideanGridPrefab, new Vector2Int(x, y));
+                    Transform tilesHolder = grid.transform.Find("Tiles Holder");
+                    tilesHolder.localPosition = new Vector3(0.5f * grid.TileSize.x, 0, 0.5f * grid.TileSize.y);
+                    Transform floor = Instantiate(m_euclideanFloorPrefab).transform;
+                    floor.name = "Floor";
+                    floor.localScale = new Vector3(2 * x, 2 * y, 1);
+                    floor.SetParent(grid.transform);
+
                     m_uiTag.AddPage(m_idInput.text, m_euclideanPanelTemplate);
                 }
                 else if (m_gridTypeDropdown.captionText.text == "Hexagonal")
@@ -111,8 +119,8 @@ public class UINewGridPanelScript : MonoBehaviour
             float y_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.y;
 
             Camera.main.orthographicSize = x_ref > y_ref ? x_ref : y_ref;
-
-            Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
+            //
+            //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
             gameObject.SetActive(false);
 
         });

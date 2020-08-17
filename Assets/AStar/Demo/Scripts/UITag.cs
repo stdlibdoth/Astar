@@ -46,9 +46,7 @@ public class UITag : MonoBehaviour
         m_newGridBtn.onClick.AddListener(() => m_newGridPanel.gameObject.SetActive(true));
         m_infoBtn.onClick.AddListener(() =>
         {
-            GameObject g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            ConstantSpeedAgent agent = MoveAgent.AddAgent<ConstantSpeedAgent, EuclideanPathGenerator>(g);
-            agent.SetTarget(new Vector2Int(10, 10));
+
         });
     }
 

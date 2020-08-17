@@ -50,6 +50,7 @@ namespace AStar
 
                 //Testity surrounding tiles and evaluate nodes
                 List<AStarTile> eval_tiles = ((HexagonalGrid)grid).GetAdjacentTiles(current.tile);
+
                 if (current.g > 0.001f)
                 {
                     foreach (var e_t in eval_tiles)

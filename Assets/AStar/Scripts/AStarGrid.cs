@@ -28,11 +28,19 @@ namespace AStar
 
         protected AStarTile[,] m_tiles;
         protected Transform m_tilesHolder;
+        protected Transform m_tilesParent;
         protected Transform m_routesHolder;
         protected UnityEvent m_onInit;
 
 
 
+
+        private void Awake()
+        {
+            m_tilesHolder = new GameObject("Tiles Holder").transform;
+            m_tilesHolder.SetParent(transform);
+            m_onInit = new UnityEvent();
+        }
 
         // override to implement the grid generation
         protected abstract IEnumerator Generate();

@@ -45,6 +45,7 @@ namespace AStar
         {
             if (other.CompareTag(m_tileTag))
             {
+                print(other);
                 AStarTile tile = other.GetComponent<AStarTile>();
                 tile.Layer = m_astarLayer;
                 m_tiles.Add(tile);

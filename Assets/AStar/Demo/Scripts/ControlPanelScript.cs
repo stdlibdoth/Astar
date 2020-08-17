@@ -54,6 +54,7 @@ public class ControlPanelScript : MonoBehaviour
     private AStarTile m_tempStartTile;
     private HashSet<AgentToggleScript> m_agentToggles;
     private Transform m_blockHolder;
+    private int m_mouseDownFrameInterval;
 
     private void Awake()
     {
@@ -69,7 +70,7 @@ public class ControlPanelScript : MonoBehaviour
         float y_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.y;
 
         Camera.main.orthographicSize = x_ref > y_ref ? x_ref : y_ref;
-        Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
+        //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
 
         if (m_blockHolder == null)
         {
@@ -112,10 +113,10 @@ public class ControlPanelScript : MonoBehaviour
             Destroy(m_blockHolder.gameObject);
             m_blockHolder = new GameObject("block holder").transform;
             m_blockHolder.SetParent(AStarManager.Grids[m_uiTag.CurrentPage].transform);
-            AStarManager.Grids[m_uiTag.CurrentPage].OnInit.AddListener(() => 
+            AStarManager.Grids[m_uiTag.CurrentPage].OnInit.AddListener(() =>
             {
                 Camera.main.orthographicSize = AStarManager.Grids[m_uiTag.CurrentPage].hSize.x * AStarManager.Grids[m_uiTag.CurrentPage].TileSize.x;
-                Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
+                //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
             });
             MoveAgent.RemoveAgents(AStarManager.Grids[m_uiTag.CurrentPage]);
             foreach (AgentToggleScript t in m_agentToggles)
@@ -128,13 +129,16 @@ public class ControlPanelScript : MonoBehaviour
             int y = Mathf.Clamp(int.Parse(m_gridYInput.text), 1, int.MaxValue);
             m_gridXInput.text = x.ToString();
             m_gridYInput.text = y.ToString();
-            AStarManager.Grids[m_uiTag.CurrentPage].InitGrid(new Vector2Int(x, y));
+            AStarGrid grid = AStarManager.Grids[m_uiTag.CurrentPage];
+            grid.InitGrid(new Vector2Int(x, y));
+            Transform floor = grid.transform.Find("Floor");
+            floor.localScale = new Vector3(2 * x, 2 * y, 1);
 
             float x_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.x;
             float y_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.y;
 
             Camera.main.orthographicSize = x_ref > y_ref ? x_ref : y_ref;
-            Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
+            //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
 
         });
 
@@ -343,9 +347,17 @@ public class ControlPanelScript : MonoBehaviour
                         AStarTile tile = hit3.transform.GetComponent<AStarTile>();
                         if (tile && tile.Layer.layerID == "BLANK")
                         {
-                            Transform t = Instantiate(m_blockPrefab, tile.transform.position, Quaternion.identity).transform;
-                            t.localScale = new Vector3(tile.Grid.TileSize.x * 0.98f, tile.Grid.TileSize.x, tile.Grid.TileSize.y * 0.98f);
-                            t.SetParent(m_blockHolder, true);
+                            if (m_mouseDownFrameInterval >= 5)
+                            {
+                                Transform t = Instantiate(m_blockPrefab, tile.transform.position, Quaternion.identity).transform;
+                                t.localScale = new Vector3(tile.Grid.TileSize.x * 0.98f, tile.Grid.TileSize.x, tile.Grid.TileSize.y * 0.98f);
+                                t.SetParent(m_blockHolder, true);
+                                m_mouseDownFrameInterval = 0;
+                            }
+                            else
+                            {
+                                m_mouseDownFrameInterval++;
+                            }
                         }
                     }
                 }
@@ -375,7 +387,7 @@ public class ControlPanelScript : MonoBehaviour
                         m_CommonTarget.localScale = new Vector3(target.Grid.TileSize.x, target.Grid.TileSize.x, target.Grid.TileSize.x);
                         m_CommonTarget.gameObject.SetActive(true);
 
-                        if (Input.GetMouseButton(0))
+                        if (Input.GetMouseButtonDown(0))
                         {
                             foreach (AgentToggleScript t in m_agentToggles)
                             {

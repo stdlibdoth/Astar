@@ -6,9 +6,9 @@ using AStar;
 namespace AStar
 {
 
-    public class EuclideanPath : AStarPath
+    public class DiagonalEuclideanPath : AStarPath
     {
-        public EuclideanPath(EuclideanGrid grid, AStarTile start, AStarTile target, MoveAgent agent) : base(grid, start, target, agent)
+        public DiagonalEuclideanPath(EuclideanGrid grid, AStarTile start, AStarTile target, MoveAgent agent) : base(grid, start, target, agent)
         {
         }
 

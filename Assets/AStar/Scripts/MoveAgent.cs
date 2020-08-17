@@ -261,6 +261,8 @@ namespace AStar
 
         private void Awake()
         {
+            if (m_pathGenerator == null)
+                m_pathGenerator = GetComponent<PathGenerator>();
             AgentState = AgentState.IDLE;
             m_id = m_agentCount;
             m_agents[m_agentCount] = this;
@@ -359,7 +361,7 @@ namespace AStar
                             tile.Layer = tile.InitialLayer;
                         }
                     }
-                    if (m_waypointTiles.Count > 1 && m_waypointTiles[1].Agent == null)
+                    if (m_waypointTiles.Count > 1 && m_waypointTiles[1].Agent == null && !CheckObstacle(m_waypointTiles[1]))
                     {
                         m_waypointTiles[1].Agent = this;
                         m_waypointTiles[1].Layer = m_astarLayer;
@@ -433,7 +435,7 @@ namespace AStar
                 }
                 m_waypointTiles = new List<AStarTile>();
             }
-            m_astarFlag = false;
+            m_astarFlag = m_tempPath.Successful ? false : true;
             AgentState = AgentState.TARGETED;
         }
 
@@ -472,6 +474,7 @@ namespace AStar
         {
             //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             //stopWatch.Start();
+            print("P2");
             AgentState = AgentState.ROUTING;
             m_tempPath = m_pathGenerator.GeneratePath(Grid, CurrentTile, m_targetTile,this);
 

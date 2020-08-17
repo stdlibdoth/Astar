@@ -55,10 +55,10 @@ public class HexagonalGrid : AStarGrid
         m_routesHolder = new GameObject("Routes").transform;
         m_routesHolder.SetParent(transform);
 
-        if (m_tilesHolder != null)
-            Destroy(m_tilesHolder.gameObject);
-        m_tilesHolder = new GameObject("Tiles Holder").transform;
-        m_tilesHolder.SetParent(transform);
+        if (m_tilesParent != null)
+            Destroy(m_tilesParent.gameObject);
+        m_tilesParent = new GameObject("Tiles Holder").transform;
+        m_tilesParent.SetParent(m_tilesHolder);
 
 
         m_tiles = new AStarTile[2 * hSize.x, 2 * hSize.y];
@@ -66,7 +66,7 @@ public class HexagonalGrid : AStarGrid
         {
             for (int j = -hSize.x; j < hSize.x; j++)
             {
-                AStarTile t = Instantiate<AStarTile>(m_tilePrefab, m_tilesHolder).InitTile(this, j, i);
+                AStarTile t = Instantiate<AStarTile>(m_tilePrefab, m_tilesParent).InitTile(this, j, i);
                 float xpos = 0;
                 if (Mathf.Abs(i % 2) == 1)
                     xpos = (j + 0.5f) * TileSize.x * Mathf.Cos(30 * Mathf.Deg2Rad);

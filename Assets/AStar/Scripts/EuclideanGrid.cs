@@ -17,10 +17,10 @@ public class EuclideanGrid : AStarGrid
         m_routesHolder = new GameObject("Routes").transform;
         m_routesHolder.SetParent(transform);
 
-        if (m_tilesHolder != null)
-            Destroy(m_tilesHolder.gameObject);
-        m_tilesHolder = new GameObject("Tiles Holder").transform;
-        m_tilesHolder.SetParent(transform);
+        if (m_tilesParent != null)
+            Destroy(m_tilesParent.gameObject);
+        m_tilesParent = new GameObject("TilesParent").transform;
+        m_tilesParent.SetParent(m_tilesHolder,false);
 
 
         m_tiles = new AStarTile[2 * hSize.x, 2 * hSize.y];
@@ -28,14 +28,14 @@ public class EuclideanGrid : AStarGrid
         {
             for (int j = -hSize.x; j < hSize.x; j++)
             {
-                AStarTile t = Instantiate<AStarTile>(m_tilePrefab, m_tilesHolder).InitTile(this, j, i);
+                AStarTile t = Instantiate<AStarTile>(m_tilePrefab, m_tilesParent).InitTile(this, j, i);
                 t.transform.localPosition = new Vector3(j * TileSize.x, 0, i * TileSize.y);
                 m_tiles[j + hSize.x, i + hSize.y] = t;
             }
         }
 
-        OnInit.Invoke();
-        OnInit.RemoveAllListeners();
+        m_onInit.Invoke();
+        m_onInit.RemoveAllListeners();
         yield return null;
     }
 

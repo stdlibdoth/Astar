@@ -32,7 +32,7 @@ public class CamControlScript : MonoBehaviour
             m_camPanState = 0;
         }
 
-        if(m_camPanState == 1)
+        if(m_camPanState == 1 && m_uiTag.CurrentPage != null)
         {
             AStarGrid grid = AStarManager.Grids[m_uiTag.CurrentPage];
             Vector3 delta = Input.mousePosition - m_mouseLastFramePos;
