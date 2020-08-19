@@ -8,9 +8,9 @@ namespace AStar
     public struct AStarLayer
     {
         public string layerID;
-        private int m_order;
+        private sbyte m_order;
 
-        public AStarLayer(string id, int order)
+        public AStarLayer(string id, sbyte order)
         {
             layerID = id;
             m_order = order;

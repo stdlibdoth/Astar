@@ -42,6 +42,9 @@ public class ControlPanelScript : MonoBehaviour
     [SerializeField] private Button m_editBlockBtn = null;
     [SerializeField] private Button m_setCommonTargetBtn = null;
 
+    [SerializeField] private Button m_startPressureTestBtn = null;
+    [SerializeField] private Button m_stopPressureTestBtn = null;
+
     [SerializeField] private GameObject m_charPrefab = null;
     [SerializeField] private GameObject m_blockPrefab = null;
 
@@ -55,6 +58,9 @@ public class ControlPanelScript : MonoBehaviour
     private HashSet<AgentToggleScript> m_agentToggles;
     private Transform m_blockHolder;
     private int m_mouseDownFrameInterval;
+    private bool m_pressureTestFlag;
+    private List<AStarTile> m_pressureTestStartTiles;
+    private List<AStarTile> m_pressureTestTargetTiles;
 
     private void Awake()
     {
@@ -70,8 +76,6 @@ public class ControlPanelScript : MonoBehaviour
         float y_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.y;
 
         Camera.main.orthographicSize = x_ref > y_ref ? x_ref : y_ref;
-        //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
-
         if (m_blockHolder == null)
         {
             m_blockHolder = new GameObject("block holder").transform;
@@ -92,6 +96,7 @@ public class ControlPanelScript : MonoBehaviour
             t.Agent.gameObject.SetActive(false);
             t.Agent.ActiveOverlay(false);
         }
+        StopPressureTest();
     }
 
     private void Start()
@@ -115,8 +120,7 @@ public class ControlPanelScript : MonoBehaviour
             m_blockHolder.SetParent(AStarManager.Grids[m_uiTag.CurrentPage].transform);
             AStarManager.Grids[m_uiTag.CurrentPage].OnInit.AddListener(() =>
             {
-                Camera.main.orthographicSize = AStarManager.Grids[m_uiTag.CurrentPage].hSize.x * AStarManager.Grids[m_uiTag.CurrentPage].TileSize.x;
-                //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
+                Camera.main.orthographicSize = AStarManager.Grids[m_uiTag.CurrentPage].hSize.x * AStarManager.Grids[m_uiTag.CurrentPage].TileSize.x;       //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
             });
             MoveAgent.RemoveAgents(AStarManager.Grids[m_uiTag.CurrentPage]);
             foreach (AgentToggleScript t in m_agentToggles)
@@ -132,13 +136,13 @@ public class ControlPanelScript : MonoBehaviour
             AStarGrid grid = AStarManager.Grids[m_uiTag.CurrentPage];
             grid.InitGrid(new Vector2Int(x, y));
             Transform floor = grid.transform.Find("Floor");
-            floor.localScale = new Vector3(2 * x, 2 * y, 1);
+            if(floor)
+                floor.localScale = new Vector3(2 * x, 2 * y, 1);
 
             float x_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.x;
             float y_ref = AStarManager.Grids[m_uiTag.CurrentPage].GridHBound.y;
 
             Camera.main.orthographicSize = x_ref > y_ref ? x_ref : y_ref;
-            //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, -AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
 
         });
 
@@ -260,6 +264,17 @@ public class ControlPanelScript : MonoBehaviour
             InputState = InputState.SETTING_TARGET;
         });
 
+        m_startPressureTestBtn?.onClick.AddListener(() =>
+        {
+            StartPressureTest();
+            m_startPressureTestBtn.interactable = false;
+        });
+
+        m_stopPressureTestBtn?.onClick.AddListener(() =>
+        {
+            StopPressureTest();
+            m_startPressureTestBtn.interactable = true;
+        });
     }
 
     public void AddAgentToggle(AgentToggleScript toggle_script)
@@ -276,9 +291,78 @@ public class ControlPanelScript : MonoBehaviour
         m_agentToggles.Remove(toggle_script);
     }
 
+    private void SpawnAgent(AStarTile startTile, AStarTile targetTile, string id)
+    {
+        GameObject g = Instantiate(m_charPrefab, new Vector3(startTile.transform.position.x, 0, startTile.transform.position.z), Quaternion.identity);
+        g.name = id;
+        g.GetComponent<MoveAgent>().SetTarget(new Vector2Int(targetTile.X, targetTile.Y));
+        AgentToggleScript agentToggle = Instantiate(m_agentTogglePrefab, m_toggleParent).Init(this, g.GetComponent<MoveAgent>());
+        g.GetComponent<MoveAgent>().OnArrival.AddListener(() =>
+        {
+            MoveAgent.RemoveAgent(g.GetComponent<MoveAgent>());
+            Destroy(g);
+            Destroy(agentToggle.gameObject);
+            m_agentToggles.Remove(agentToggle);
+        });
+        m_agentToggles.Add(agentToggle);
+    }
+
+    private void StartPressureTest()
+    {
+        m_pressureTestStartTiles = new List<AStarTile>();
+        m_pressureTestTargetTiles = new List<AStarTile>();
+        m_pressureTestFlag = true;
+        int xHSize = AStarManager.Grids[m_uiTag.CurrentPage].hSize.x;
+        int yHSize = AStarManager.Grids[m_uiTag.CurrentPage].hSize.y;
+        for (int y = -yHSize; y < yHSize; y+=4)
+        {
+            for (int x = -xHSize+2; x < yHSize; x+=4)
+            {
+                int target_x = x - Sign(x) * xHSize;
+                int target_y = y - Sign(y) * yHSize;
+                if (!AStarManager.Grids[m_uiTag.CurrentPage].CheckBoundary(target_x, target_y))
+                    continue;
+                m_pressureTestStartTiles.Add(AStarManager.Grids[m_uiTag.CurrentPage].GetTile(x, y));
+                m_pressureTestTargetTiles.Add(AStarManager.Grids[m_uiTag.CurrentPage].GetTile(target_x, target_y));
+            }
+        }
+    }
+
+    private int Sign(int i)
+    {
+        return (i < 0) ? -1 : 1;
+    }
+
+    private void StopPressureTest()
+    {
+        foreach (AgentToggleScript t in m_agentToggles)
+        {
+            MoveAgent.RemoveAgent(t.Agent);
+            Destroy(t.Agent.gameObject);
+            Destroy(t.gameObject);
+        }
+        m_agentToggles.Clear();
+        m_pressureTestFlag = false;
+    }
+
     private void Update()
     {
         AStarTile tempTargetTile = null;
+
+
+        if(m_pressureTestFlag && m_pressureTestStartTiles.Count>0)
+        {
+            int count = m_pressureTestStartTiles.Count + m_pressureTestTargetTiles.Count;
+            SpawnAgent(m_pressureTestStartTiles[0], m_pressureTestTargetTiles[0], "1");
+            m_pressureTestStartTiles.RemoveAt(0);
+            m_pressureTestTargetTiles.RemoveAt(0);
+        }
+
+        if(m_pressureTestFlag == true && m_agentToggles.Count == 0)
+        {
+                m_pressureTestFlag = false;
+                m_startPressureTestBtn.interactable = true;
+        }
 
         switch (InputState)
         {
@@ -316,18 +400,7 @@ public class ControlPanelScript : MonoBehaviour
                         if (Input.GetMouseButtonDown(0))
                         {
                             tempTargetTile = tile;
-                            GameObject g = Instantiate(m_charPrefab, new Vector3(m_tempStartTile.transform.position.x, 0, m_tempStartTile.transform.position.z),Quaternion.identity);
-                            g.name = m_newPathInput.text;
-                            g.GetComponent<MoveAgent>().SetTarget(new Vector2Int(tempTargetTile.X, tempTargetTile.Y));
-                            AgentToggleScript agentToggle = Instantiate(m_agentTogglePrefab, m_toggleParent).Init(this, g.GetComponent<MoveAgent>());
-                            g.GetComponent<MoveAgent>().OnArrival.AddListener(() => 
-                            {
-                                MoveAgent.RemoveAgent(g.GetComponent<MoveAgent>());
-                                Destroy(g);
-                                Destroy(agentToggle.gameObject);
-                                m_agentToggles.Remove(agentToggle);
-                            });
-                            m_agentToggles.Add(agentToggle);
+                            SpawnAgent(m_tempStartTile, tempTargetTile, m_newPathInput.text);
                             m_newPathInput.text = "";
                             m_newPathInput.ActivateInputField();
                             m_uiBlocker.gameObject.SetActive(false);

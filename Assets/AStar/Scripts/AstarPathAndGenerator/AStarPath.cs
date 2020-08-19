@@ -7,7 +7,6 @@ using AStar;
 
 namespace AStar
 {
-
     public abstract class AStarPath
     {
         public HashSet<AStarNode> Nodes { get { return m_nodes; } }
@@ -20,8 +19,6 @@ namespace AStar
         protected HashSet<AStarNode> m_nodes;
         protected List<AStarTile> m_pathTiles;
         protected bool m_successful;
-
-
 
 
         public AStarPath (AStarGrid grid, AStarTile start, AStarTile target, MoveAgent agent)
@@ -40,7 +37,7 @@ namespace AStar
             AStar(m_grid, startNode, targetNode);
         }
 
-
+        //override this method in child class to implement A* path finding algorithm
         protected abstract void AStar(AStarGrid grid, AStarNode start, AStarNode target);
     }
 }

@@ -35,10 +35,7 @@ namespace Battlehub.Dispatcher
         private void Awake()
         {
             if (Current != null)
-            {
                 Destroy(Current);
-            }
-
             Current = this;
             m_wait = new Queue<Action>();
         }

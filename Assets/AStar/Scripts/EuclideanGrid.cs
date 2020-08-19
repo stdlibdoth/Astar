@@ -3,81 +3,84 @@ using System.Collections.Generic;
 using UnityEngine;
 using AStar;
 
-public class EuclideanGrid : AStarGrid
+namespace AStar
 {
-    [Header("2D Euclidean tile size")]
-    [SerializeField] private Vector2 m_tileSize = new Vector2(0,0);
-    public override Vector2 TileSize { get { return m_tileSize; } }
-    public override Vector2 GridHBound { get { return new Vector2(hSize.x * TileSize.x, hSize.y * TileSize.y); } }
-
-    protected override IEnumerator Generate()
+    public class EuclideanGrid : AStarGrid
     {
-        if (m_routesHolder != null)
-            Destroy(m_routesHolder.gameObject);
-        m_routesHolder = new GameObject("Routes").transform;
-        m_routesHolder.SetParent(transform);
+        [Header("2D Euclidean tile size")]
+        [SerializeField] private Vector2 m_tileSize = new Vector2(0, 0);
+        public override Vector2 TileSize { get { return m_tileSize; } }
+        public override Vector2 GridHBound { get { return new Vector2(hSize.x * TileSize.x, hSize.y * TileSize.y); } }
 
-        if (m_tilesParent != null)
-            Destroy(m_tilesParent.gameObject);
-        m_tilesParent = new GameObject("TilesParent").transform;
-        m_tilesParent.SetParent(m_tilesHolder,false);
-
-
-        m_tiles = new AStarTile[2 * hSize.x, 2 * hSize.y];
-        for (int i = -hSize.y; i < hSize.y; i++)
+        protected override IEnumerator Generate()
         {
-            for (int j = -hSize.x; j < hSize.x; j++)
+            if (m_routesHolder != null)
+                Destroy(m_routesHolder.gameObject);
+            m_routesHolder = new GameObject("Routes").transform;
+            m_routesHolder.SetParent(transform);
+
+            if (m_tilesParent != null)
+                Destroy(m_tilesParent.gameObject);
+            m_tilesParent = new GameObject("TilesParent").transform;
+            m_tilesParent.SetParent(m_tilesHolder, false);
+
+
+            m_tiles = new AStarTile[2 * hSize.x, 2 * hSize.y];
+            for (int i = -hSize.y; i < hSize.y; i++)
             {
-                AStarTile t = Instantiate<AStarTile>(m_tilePrefab, m_tilesParent).InitTile(this, j, i);
-                t.transform.localPosition = new Vector3(j * TileSize.x, 0, i * TileSize.y);
-                m_tiles[j + hSize.x, i + hSize.y] = t;
+                for (int j = -hSize.x; j < hSize.x; j++)
+                {
+                    AStarTile t = Instantiate<AStarTile>(m_tilePrefab, m_tilesParent).InitTile(this, j, i);
+                    t.transform.localPosition = new Vector3(j * TileSize.x, 0, i * TileSize.y);
+                    m_tiles[j + hSize.x, i + hSize.y] = t;
+                }
             }
+
+            m_onInit.Invoke();
+            m_onInit.RemoveAllListeners();
+            yield return null;
         }
 
-        m_onInit.Invoke();
-        m_onInit.RemoveAllListeners();
-        yield return null;
-    }
+        public override List<AStarTile> GetAdjacentTiles(AStarTile tile)
+        {
+            List<AStarTile> tiles = new List<AStarTile>();
+            if (tile.Grid != this)
+                return tiles;
 
-    public override List<AStarTile> GetAdjacentTiles(AStarTile tile)
-    {
-        List<AStarTile> tiles = new List<AStarTile>();
-        if (tile.Grid != this)
+            if (CheckBoundary(tile.X, tile.Y + 1))
+                tiles.Add(GetTile(tile.X, tile.Y + 1));
+            if (CheckBoundary(tile.X + 1, tile.Y + 1))
+                tiles.Add(GetTile(tile.X + 1, tile.Y + 1));
+            if (CheckBoundary(tile.X + 1, tile.Y))
+                tiles.Add(GetTile(tile.X + 1, tile.Y));
+            if (CheckBoundary(tile.X + 1, tile.Y - 1))
+                tiles.Add(GetTile(tile.X + 1, tile.Y - 1));
+            if (CheckBoundary(tile.X, tile.Y - 1))
+                tiles.Add(GetTile(tile.X, tile.Y - 1));
+            if (CheckBoundary(tile.X - 1, tile.Y - 1))
+                tiles.Add(GetTile(tile.X - 1, tile.Y - 1));
+            if (CheckBoundary(tile.X - 1, tile.Y))
+                tiles.Add(GetTile(tile.X - 1, tile.Y));
+            if (CheckBoundary(tile.X - 1, tile.Y + 1))
+                tiles.Add(GetTile(tile.X - 1, tile.Y + 1));
             return tiles;
+        }
 
-        if (CheckBoundary(tile.X, tile.Y + 1))
-            tiles.Add(GetTile(tile.X, tile.Y + 1));
-        if (CheckBoundary(tile.X + 1, tile.Y + 1))
-            tiles.Add(GetTile(tile.X + 1, tile.Y + 1));
-        if (CheckBoundary(tile.X + 1, tile.Y))
-            tiles.Add(GetTile(tile.X + 1, tile.Y));
-        if (CheckBoundary(tile.X + 1, tile.Y - 1))
-            tiles.Add(GetTile(tile.X + 1, tile.Y - 1));
-        if (CheckBoundary(tile.X, tile.Y - 1))
-            tiles.Add(GetTile(tile.X, tile.Y - 1));
-        if (CheckBoundary(tile.X - 1, tile.Y - 1))
-            tiles.Add(GetTile(tile.X - 1, tile.Y - 1));
-        if (CheckBoundary(tile.X - 1, tile.Y))
-            tiles.Add(GetTile(tile.X - 1, tile.Y));
-        if (CheckBoundary(tile.X - 1, tile.Y + 1))
-            tiles.Add(GetTile(tile.X - 1, tile.Y + 1));
-        return tiles;
-    }
+        public List<AStarTile> GetAdjacentTilesWithoutDiagonal(AStarTile tile)
+        {
+            List<AStarTile> tiles = new List<AStarTile>();
+            if (tile.Grid != this)
+                return tiles;
 
-    public List<AStarTile> GetAdjacentTilesWithoutDiagonal(AStarTile tile)
-    {
-        List<AStarTile> tiles = new List<AStarTile>();
-        if (tile.Grid != this)
+            if (CheckBoundary(tile.X, tile.Y + 1))
+                tiles.Add(GetTile(tile.X, tile.Y + 1));
+            if (CheckBoundary(tile.X + 1, tile.Y))
+                tiles.Add(GetTile(tile.X + 1, tile.Y));
+            if (CheckBoundary(tile.X, tile.Y - 1))
+                tiles.Add(GetTile(tile.X, tile.Y - 1));
+            if (CheckBoundary(tile.X - 1, tile.Y))
+                tiles.Add(GetTile(tile.X - 1, tile.Y));
             return tiles;
-
-        if (CheckBoundary(tile.X, tile.Y + 1))
-            tiles.Add(GetTile(tile.X, tile.Y + 1));
-        if (CheckBoundary(tile.X + 1, tile.Y))
-            tiles.Add(GetTile(tile.X + 1, tile.Y));
-        if (CheckBoundary(tile.X, tile.Y - 1))
-            tiles.Add(GetTile(tile.X, tile.Y - 1));
-        if (CheckBoundary(tile.X - 1, tile.Y))
-            tiles.Add(GetTile(tile.X - 1, tile.Y));
-        return tiles;
+        }
     }
 }

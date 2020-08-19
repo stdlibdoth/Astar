@@ -30,7 +30,7 @@ namespace AStar
                 m_settingsCopy = ScriptableObject.CreateInstance("AStarSettings") as AStarSettings;
                 for (int i = 0; i < m_settings.layers.Count; i++)
                 {
-                    m_settings.layers[i] = new AStarLayer(m_settings.layers[i].layerID, i);
+                    m_settings.layers[i] = new AStarLayer(m_settings.layers[i].layerID, (sbyte)i);
                 }
                 DontDestroyOnLoad(gameObject);
             }
@@ -70,10 +70,10 @@ namespace AStar
             }
         }
 
-        //if no layer found, return null
-        public static int GetLayer(string id)
+        //if no layer found, return -1
+        public static sbyte GetLayer(string id)
         {
-            for (int i = 0; i < m_singleton.m_settings.layers.Count; i++)
+            for (sbyte i = 0; i < m_singleton.m_settings.layers.Count; i++)
             {
                 if (m_singleton.m_settings.layers[i].layerID == id)
                 {
@@ -87,12 +87,12 @@ namespace AStar
         //The layer will be created if it doesn't exist
         public static AStarLayer SetAStarLayer(string layerID)
         {
-            int index = AStarManager.GetLayer(layerID);
+            sbyte index = AStarManager.GetLayer(layerID);
             if (index != -1)
             {
                 return new AStarLayer(layerID,index);
             }
-            AStarLayer layer = new AStarLayer(layerID, m_settingsCopy.layers.Count);
+            AStarLayer layer = new AStarLayer(layerID, (sbyte)m_settingsCopy.layers.Count);
             m_settingsCopy.layers.Add(layer);
             return layer;
         }

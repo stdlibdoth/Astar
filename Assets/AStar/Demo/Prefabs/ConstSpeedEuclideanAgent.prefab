@@ -142,8 +142,8 @@ MonoBehaviour:
   m_pathOverlay: {fileID: 800462111247003252}
   m_moveTrans: {fileID: 884220325778017326}
   descreteMovement: 0
-  m_pathGenerator: {fileID: 0}
-  oaMode: 0
+  m_pathGenerator: {fileID: 5719363096553063326}
+  oaMode: 1
   m_obstacleSetting: {fileID: 11400000, guid: f5af874747c3d8e4aac533890a295a72, type: 2}
   constSpeed: 1
   m_nameTag: {fileID: 5807420817306043855}
@@ -381,7 +381,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 997a43b767814dd0a7642ec9b78cba41, type: 3}
+  - {fileID: 10100, guid: 0000000000000000e000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -13,6 +13,7 @@ public class UINewGridPanelScript : MonoBehaviour
     [SerializeField] private RectTransform m_euclideanPanelTemplate = null;
     [SerializeField] private RectTransform m_hexagonalPanelTemplate = null;
     [SerializeField] private RectTransform m_premadePanelTemplate = null;
+    [SerializeField] private RectTransform m_pressureTestPanelTemplate = null;
 
     [SerializeField] private UITag m_uiTag = null;
     [SerializeField] private InputField m_idInput = null;
@@ -58,7 +59,7 @@ public class UINewGridPanelScript : MonoBehaviour
 
         m_gridTypeDropdown.onValueChanged.AddListener((int index) =>
         {
-            if(index == 2)
+            if(index == 2 || index == 3)
             {
                 m_idInput.text = "";
                 m_xInput.text = "";
@@ -66,7 +67,9 @@ public class UINewGridPanelScript : MonoBehaviour
                 m_idInput.interactable = false;
                 m_xInput.interactable = false;
                 m_yInput.interactable = false;
-                m_generateBtn.interactable = m_premadeGrid == null;
+                m_generateBtn.interactable = true;
+                if (index == 2)
+                    m_generateBtn.interactable = m_premadeGrid == null;
             }
             else
             {
@@ -84,7 +87,21 @@ public class UINewGridPanelScript : MonoBehaviour
             {
                 text_ref = "Premade";
                 m_premadeGrid = AStarManager.AddGrid("Premade", m_premadeGridPrefab);
+                Transform tilesHolder = m_premadeGrid.transform.Find("Tiles Holder");
+                tilesHolder.localPosition = new Vector3(0.5f * m_premadeGrid.TileSize.x, 0, 0.5f * m_premadeGrid.TileSize.y);
                 m_uiTag.AddPage("Premade", m_premadePanelTemplate);
+            }
+            else if (m_gridTypeDropdown.captionText.text == "OA Pressure Test")
+            {
+                AStarGrid grid = AStarManager.AddGrid(m_idInput.text, m_euclideanGridPrefab, new Vector2Int(16, 16));
+                Transform tilesHolder = grid.transform.Find("Tiles Holder");
+                tilesHolder.localPosition = new Vector3(0.5f * grid.TileSize.x, 0, 0.5f * grid.TileSize.y);
+                Transform floor = Instantiate(m_euclideanFloorPrefab).transform;
+                floor.name = "Floor";
+                floor.localScale = new Vector3(2 * 16, 2 * 16, 1);
+                floor.SetParent(grid.transform);
+
+                m_uiTag.AddPage(m_idInput.text, m_pressureTestPanelTemplate);
             }
             else
             {
@@ -103,6 +120,7 @@ public class UINewGridPanelScript : MonoBehaviour
 
                     m_uiTag.AddPage(m_idInput.text, m_euclideanPanelTemplate);
                 }
+
                 else if (m_gridTypeDropdown.captionText.text == "Hexagonal")
                 {
                     AStarManager.AddGrid(m_idInput.text, m_hexagonalGridPrefab, new Vector2Int(x, y));

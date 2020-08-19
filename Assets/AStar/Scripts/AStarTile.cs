@@ -18,15 +18,15 @@ namespace AStar
     [RequireComponent(typeof(Collider))]
     public class AStarTile : MonoBehaviour
     {
-        [Header("References")]
-        [SerializeField] protected Material m_blankMat = null;
-        [SerializeField] protected Material m_blockMat = null;
+        //[Header("References")]
+        //[SerializeField] protected Material m_blankMat = null;
+        //[SerializeField] protected Material m_blockMat = null;
 
         [SerializeField] protected AStarLayer m_astarLayer;
 
         public MoveAgent Agent { get; set; }
 
-        [SerializeField] private AStarLayer m_initialLayer;
+        private AStarLayer m_initialLayer;
 
         public AStarLayer InitialLayer { get { return m_initialLayer; } }
 
@@ -42,10 +42,10 @@ namespace AStar
                     if (!mr)
                         return;
 
-                    if (m_astarLayer.layerID == "BLANK")
-                        mr.material = m_blankMat;
-                    else
-                        mr.material = m_blockMat;
+                    //if (m_astarLayer.layerID == "BLANK")
+                    //    mr.material = m_blankMat;
+                    //else
+                    //    mr.material = m_blockMat;
                     //switch (value)
                     //{
                     //    case TileType.BLANK:

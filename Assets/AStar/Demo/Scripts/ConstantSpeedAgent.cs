@@ -4,25 +4,27 @@ using UnityEngine;
 using UnityEngine.UI;
 using AStar;
 
-
-public class ConstantSpeedAgent : MoveAgent
+namespace AStar
 {
-
-    [Header("Constant speed agent")]
-    public float constSpeed;
-
-    [SerializeField] private TextMesh m_nameTag = null;
-
-
-    public void ActiveNameTag(bool active)
+    public class ConstantSpeedAgent : MoveAgent
     {
-        m_nameTag.text = gameObject.name;
-        m_nameTag.gameObject.SetActive(active);
-    }
 
-    protected override void Move(List<AStarTile> way_points)
-    {
-        m_moveTrans.LookAt(way_points[1].transform.position);
-        m_moveTrans.position = Vector3.MoveTowards(m_moveTrans.position, way_points[1].transform.position, constSpeed * Time.deltaTime);
+        [Header("Constant speed agent")]
+        public float constSpeed;
+
+        [SerializeField] private TextMesh m_nameTag = null;
+
+
+        public void ActiveNameTag(bool active)
+        {
+            m_nameTag.text = gameObject.name;
+            m_nameTag.gameObject.SetActive(active);
+        }
+
+        protected override void Move(List<AStarTile> way_points)
+        {
+            m_moveTrans.LookAt(way_points[1].transform.position);
+            m_moveTrans.position = Vector3.MoveTowards(m_moveTrans.position, way_points[1].transform.position, constSpeed * Time.deltaTime);
+        }
     }
 }

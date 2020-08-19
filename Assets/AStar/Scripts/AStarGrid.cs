@@ -33,8 +33,6 @@ namespace AStar
         protected UnityEvent m_onInit;
 
 
-
-
         private void Awake()
         {
             m_tilesHolder = new GameObject("Tiles Holder").transform;

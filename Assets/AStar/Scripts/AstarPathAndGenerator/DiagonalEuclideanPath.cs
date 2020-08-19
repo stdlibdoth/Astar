@@ -5,7 +5,6 @@ using AStar;
 
 namespace AStar
 {
-
     public class DiagonalEuclideanPath : AStarPath
     {
         public DiagonalEuclideanPath(EuclideanGrid grid, AStarTile start, AStarTile target, MoveAgent agent) : base(grid, start, target, agent)

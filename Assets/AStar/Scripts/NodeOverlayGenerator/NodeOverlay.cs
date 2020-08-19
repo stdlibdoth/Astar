@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using AStar;
 
 namespace AStar
 {
@@ -13,15 +11,14 @@ namespace AStar
         [SerializeField] private TextMesh m_gText = null;
         [SerializeField] private TextMesh m_fText = null;
 
-        //[SerializeField] private Canvas m_canvas = null;
         [SerializeField] private SpriteRenderer m_sRenderer = null;
         [SerializeField] private Color m_terminalColor = new Color(0, 0, 0, 0);
         [SerializeField] private Color m_openColor = new Color(0, 0, 0, 0);
         [SerializeField] private Color m_closeColor = new Color(0, 0, 0, 0);
         [SerializeField] private Color m_pathColor = new Color(0, 0, 0, 0);
 
-        public bool pooled;
-        public NodeOverlayPool pool = null;
+        [HideInInspector]public bool pooled;
+        [HideInInspector]public NodeOverlayPool pool = null;
 
         private void Awake()
         {
