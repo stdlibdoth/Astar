@@ -14,8 +14,8 @@ namespace AStar
         {
             get
             {
-                return new Vector2((hSize.x * 2 + Mathf.Clamp(hSize.y, 0, 1)) * Mathf.Cos(30 * Mathf.Deg2Rad) * m_tileRadius,
-                    (2 * m_tileRadius) + ((hSize.y - 1) * 1.5f * m_tileRadius));
+                return new Vector2(((hSize.x * 2 * m_tileRadius * Mathf.Cos(30 * Mathf.Deg2Rad)) + (Mathf.Clamp(hSize.y, 0, 1)) * Mathf.Cos(30 * Mathf.Deg2Rad) * m_tileRadius *0.5f),
+                    1.5f * hSize.y * m_tileRadius + 0.25f * m_tileRadius);
             }
         }
 
@@ -68,7 +68,7 @@ namespace AStar
             {
                 for (int j = -hSize.x; j < hSize.x; j++)
                 {
-                    AStarTile t = Instantiate<AStarTile>(m_tilePrefab, m_tilesParent).InitTile(this, j, i);
+                    AStarTile t = Instantiate(m_tilePrefab, m_tilesParent).InitTile(this, j, i);
                     float xpos = 0;
                     if (Mathf.Abs(i % 2) == 1)
                         xpos = (j + 0.5f) * TileSize.x * Mathf.Cos(30 * Mathf.Deg2Rad);

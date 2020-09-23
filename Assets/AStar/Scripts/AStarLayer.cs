@@ -8,7 +8,7 @@ namespace AStar
     public struct AStarLayer
     {
         public string layerID;
-        private sbyte m_order;
+        [SerializeField]private sbyte m_order;
 
         public AStarLayer(string id, sbyte order)
         {

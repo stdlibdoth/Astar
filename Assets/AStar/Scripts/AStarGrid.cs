@@ -11,6 +11,7 @@ namespace AStar
         [Header("Grid Settings")]
         public Vector2Int hSize;
         public abstract Vector2 TileSize { get; }
+        //positive bound
         public abstract Vector2 GridHBound { get; }
 
         [Header("References")]

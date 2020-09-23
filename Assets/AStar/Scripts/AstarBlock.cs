@@ -12,7 +12,6 @@ namespace AStar
         [SerializeField] private string m_tileTag = null;
         private HashSet<AStarTile> m_tiles;
 
-
         private void Awake()
         {
             m_tiles = new HashSet<AStarTile>();
@@ -46,7 +45,7 @@ namespace AStar
             if (other.CompareTag(m_tileTag))
             {
                 AStarTile tile = other.GetComponent<AStarTile>();
-                tile.Layer = m_astarLayer;
+                tile.Layer = AStarManager.SetAStarLayer(m_astarLayer.layerID);
                 m_tiles.Add(tile);
             }
         }

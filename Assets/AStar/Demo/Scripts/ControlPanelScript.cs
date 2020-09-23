@@ -47,7 +47,7 @@ public class ControlPanelScript : MonoBehaviour
 
     [SerializeField] private GameObject m_charPrefab = null;
     [SerializeField] private GameObject m_blockPrefab = null;
-
+    [SerializeField] private Projector m_gridProjector = null;
 
 
     public static InputState InputState { get; set; }
@@ -87,6 +87,9 @@ public class ControlPanelScript : MonoBehaviour
             t.Agent.gameObject.SetActive(t.IsVisibilityToggleOn);
             t.Agent.ActiveOverlay(t.IsOverlayToggleOn);
         }
+
+        if(m_gridProjector)
+            m_gridProjector.gameObject.SetActive(true);
     }
 
     private void OnDisable()
@@ -97,6 +100,8 @@ public class ControlPanelScript : MonoBehaviour
             t.Agent.ActiveOverlay(false);
         }
         StopPressureTest();
+        if (m_gridProjector)
+            m_gridProjector.gameObject.SetActive(false);
     }
 
     private void Start()
@@ -316,7 +321,7 @@ public class ControlPanelScript : MonoBehaviour
         int yHSize = AStarManager.Grids[m_uiTag.CurrentPage].hSize.y;
         for (int y = -yHSize; y < yHSize; y+=4)
         {
-            for (int x = -xHSize+2; x < yHSize; x+=4)
+            for (int x = -xHSize; x < yHSize; x+=(3 + (y/4)%2))
             {
                 int target_x = x - Sign(x) * xHSize;
                 int target_y = y - Sign(y) * yHSize;
@@ -420,7 +425,7 @@ public class ControlPanelScript : MonoBehaviour
                         AStarTile tile = hit3.transform.GetComponent<AStarTile>();
                         if (tile && tile.Layer.layerID == "BLANK")
                         {
-                            if (m_mouseDownFrameInterval >= 5)
+                            if (m_mouseDownFrameInterval >= 4)
                             {
                                 Transform t = Instantiate(m_blockPrefab, tile.transform.position, Quaternion.identity).transform;
                                 t.localScale = new Vector3(tile.Grid.TileSize.x * 0.98f, tile.Grid.TileSize.x, tile.Grid.TileSize.y * 0.98f);

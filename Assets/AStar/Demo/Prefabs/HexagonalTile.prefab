@@ -61,8 +61,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_blankMat: {fileID: 2100000, guid: 069f1b18802afbe49b8cfcd277fdf794, type: 2}
   m_blockMat: {fileID: 2100000, guid: dd3e2d93c8075c349aa510ddeae53b62, type: 2}
-  astarLayer:
-    layerID: BLANK
+  m_astarLayer:
+    layerID: 
+    m_order: 0
 --- !u!1001 &9141070539753978255
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -149,6 +150,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Hexagon
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 50819e86007f3df458a7f08e8235d9c6,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 50819e86007f3df458a7f08e8235d9c6, type: 3}

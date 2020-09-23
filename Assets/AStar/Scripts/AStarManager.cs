@@ -11,13 +11,11 @@ namespace AStar
 
         [SerializeField] private AStarSettings m_settings = null;
 
-        //public static AStarManager ManagerSingleton { get { return m_singleton; } }
-
-        public static AStarSettings Settings { get { return m_settingsCopy; } }
+        public static AStarSettings Settings { get { return m_singleton.m_settingsCopy; } }
         public static Dictionary<string,AStarGrid> Grids { get { return m_grids; } }
         private static AStarManager m_singleton;
         private static Dictionary<string,AStarGrid> m_grids;
-        private static AStarSettings m_settingsCopy;
+        private AStarSettings m_settingsCopy;
 
         private Transform gridsHolder;
 
@@ -28,9 +26,10 @@ namespace AStar
                 m_singleton = this;
                 m_grids = new Dictionary<string, AStarGrid>();
                 m_settingsCopy = ScriptableObject.CreateInstance("AStarSettings") as AStarSettings;
+                m_settingsCopy = m_settings;
                 for (int i = 0; i < m_settings.layers.Count; i++)
                 {
-                    m_settings.layers[i] = new AStarLayer(m_settings.layers[i].layerID, (sbyte)i);
+                    m_settingsCopy.layers[i] = new AStarLayer(m_settings.layers[i].layerID, (sbyte)i);
                 }
                 DontDestroyOnLoad(gameObject);
             }
@@ -73,9 +72,9 @@ namespace AStar
         //if no layer found, return -1
         public static sbyte GetLayer(string id)
         {
-            for (sbyte i = 0; i < m_singleton.m_settings.layers.Count; i++)
+            for (sbyte i = 0; i < m_singleton.m_settingsCopy.layers.Count; i++)
             {
-                if (m_singleton.m_settings.layers[i].layerID == id)
+                if (m_singleton.m_settingsCopy.layers[i].layerID == id)
                 {
                     return i;
                 }
@@ -90,10 +89,10 @@ namespace AStar
             sbyte index = AStarManager.GetLayer(layerID);
             if (index != -1)
             {
-                return new AStarLayer(layerID,index);
+                return m_singleton.m_settingsCopy.layers[index];
             }
-            AStarLayer layer = new AStarLayer(layerID, (sbyte)m_settingsCopy.layers.Count);
-            m_settingsCopy.layers.Add(layer);
+            AStarLayer layer = new AStarLayer(layerID, (sbyte)m_singleton.m_settingsCopy.layers.Count);
+            m_singleton.m_settingsCopy.layers.Add(layer);
             return layer;
         }
     }

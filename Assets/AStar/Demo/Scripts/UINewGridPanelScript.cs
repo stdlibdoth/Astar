@@ -52,7 +52,7 @@ public class UINewGridPanelScript : MonoBehaviour
 
         m_idInput.onValueChanged.AddListener((string input) =>
         {
-            m_idInputChecked = input != "" && !AStarManager.Grids.ContainsKey(input);
+            m_idInputChecked = input != "" && !AStarManager.Grids.ContainsKey(input) && input != "Premade";
             m_generateBtn.interactable = m_xInputChecked && m_yInputChecked && m_idInputChecked;
         });
 
@@ -123,7 +123,13 @@ public class UINewGridPanelScript : MonoBehaviour
 
                 else if (m_gridTypeDropdown.captionText.text == "Hexagonal")
                 {
-                    AStarManager.AddGrid(m_idInput.text, m_hexagonalGridPrefab, new Vector2Int(x, y));
+                    AStarGrid grid = AStarManager.AddGrid(m_idInput.text, m_hexagonalGridPrefab, new Vector2Int(x, y));
+                    //Transform tilesHolder = grid.transform.Find("Tiles Holder");
+                    Transform floor = Instantiate(m_euclideanFloorPrefab).transform;
+                    floor.name = "Floor";
+                    floor.localScale = new Vector3(2*grid.GridHBound.x, 2*grid.GridHBound.y, 1);
+                    floor.SetParent(grid.transform);
+                    floor.localPosition = new Vector3(-0.5f * Mathf.Cos(30*Mathf.Deg2Rad)* grid.TileSize.x * 0.5f, 0, -0.75f * grid.TileSize.y*0.5f);
                     m_uiTag.AddPage(m_idInput.text, m_hexagonalPanelTemplate);
                 }
             }
@@ -139,6 +145,8 @@ public class UINewGridPanelScript : MonoBehaviour
             Camera.main.orthographicSize = x_ref > y_ref ? x_ref : y_ref;
             //
             //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, AStarManager.Grids[m_uiTag.CurrentPage].TileSize.y * 0.5f);
+
+
             gameObject.SetActive(false);
 
         });

@@ -13,6 +13,8 @@ namespace AStar
 
         protected override void AStar(AStarGrid grid, AStarNode startnode, AStarNode targetnode)
         {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
             m_successful = false;
             if (startnode == null && targetnode == null)
                 return;
@@ -28,14 +30,14 @@ namespace AStar
                 current = open_nodes[0];
                 foreach (AStarNode node in open_nodes)
                 {
-                    if (node.F - current.F < -0.0001f)
+                    if (node.g + node.h - current.g - current.h < -0.0001f)
                     {
                         current = node;
                     }
-                    else if (node.F == current.F && node.g < current.g)
-                    {
-                        current = node;
-                    }
+                    //else if (node.g + node.h == current.g + current.h && node.g < current.g)
+                    //{
+                    //    current = node;
+                    //}
                 }
                 open_nodes.Remove(current);
                 if (current != startnode)
@@ -47,7 +49,7 @@ namespace AStar
 
 
                 //Testity surrounding tiles, take care of diagonal movements
-                HashSet<AStarTile> eval_tiles = new HashSet<AStarTile>();
+                AStarTile[] eval_tiles = new AStarTile[8];
                 AStarTile tile_n = null;
                 AStarTile tile_s = null;
                 AStarTile tile_e = null;
@@ -59,7 +61,7 @@ namespace AStar
                 if (grid.CheckBoundary(current.tile.X, current.tile.Y + 1))
                 {
                     tile_n = grid.GetTile(current.tile.X, current.tile.Y + 1);
-                    eval_tiles.Add(tile_n);
+                    eval_tiles[0] = tile_n;
                     if (tile_nodes.ContainsKey(tile_n) && tile_nodes[tile_n].nodeType == NodeType.CORNER)
                     {
                         tile_nodes[tile_n].nodeType = NodeType.OPEN;
@@ -69,7 +71,7 @@ namespace AStar
                 if (grid.CheckBoundary(current.tile.X, current.tile.Y - 1))
                 {
                     tile_s = grid.GetTile(current.tile.X, current.tile.Y - 1);
-                    eval_tiles.Add(tile_s);
+                    eval_tiles[1] = tile_s;
                     if (tile_nodes.ContainsKey(tile_s) && tile_nodes[tile_s].nodeType == NodeType.CORNER)
                     {
                         tile_nodes[tile_s].nodeType = NodeType.OPEN;
@@ -79,7 +81,7 @@ namespace AStar
                 if (grid.CheckBoundary(current.tile.X + 1, current.tile.Y))
                 {
                     tile_e = grid.GetTile(current.tile.X + 1, current.tile.Y);
-                    eval_tiles.Add(tile_e);
+                    eval_tiles[2] = tile_e;
                     if (tile_nodes.ContainsKey(tile_e) && tile_nodes[tile_e].nodeType == NodeType.CORNER)
                     {
                         tile_nodes[tile_e].nodeType = NodeType.OPEN;
@@ -89,7 +91,7 @@ namespace AStar
                 if (grid.CheckBoundary(current.tile.X - 1, current.tile.Y))
                 {
                     tile_w = grid.GetTile(current.tile.X - 1, current.tile.Y);
-                    eval_tiles.Add(tile_w);
+                    eval_tiles[3] = tile_w;
                     if (tile_nodes.ContainsKey(tile_w) && tile_nodes[tile_w].nodeType == NodeType.CORNER)
                     {
                         tile_nodes[tile_w].nodeType = NodeType.OPEN;
@@ -99,29 +101,31 @@ namespace AStar
                 if (grid.CheckBoundary(current.tile.X + 1, current.tile.Y + 1))
                 {
                     tile_ne = grid.GetTile(current.tile.X + 1, current.tile.Y + 1);
-                    eval_tiles.Add(tile_ne);
+                    eval_tiles[4] = tile_ne;
                 }
                 if (grid.CheckBoundary(current.tile.X - 1, current.tile.Y + 1))
                 {
                     tile_nw = grid.GetTile(current.tile.X - 1, current.tile.Y + 1);
-                    eval_tiles.Add(tile_nw);
+                    eval_tiles[5] = tile_nw;
                 }
                 if (grid.CheckBoundary(current.tile.X - 1, current.tile.Y - 1))
                 {
                     tile_sw = grid.GetTile(current.tile.X - 1, current.tile.Y - 1);
-                    eval_tiles.Add(tile_sw);
+                    eval_tiles[6] = tile_sw;
                 }
                 if (grid.CheckBoundary(current.tile.X + 1, current.tile.Y - 1))
                 {
                     tile_se = grid.GetTile(current.tile.X + 1, current.tile.Y - 1);
-                    eval_tiles.Add(tile_se);
+                    eval_tiles[7] = tile_se;
                 }
 
                 // Evaluate nodes
                 if (current.g > 0.001f)
                 {
-                    foreach (var e_t in eval_tiles)
+                    for(int i = 0; i<eval_tiles.Length;i++)
                     {
+                        AStarTile e_t = eval_tiles[i];
+                        if (e_t == null) continue;
                         if (!agent.CheckObstacle(e_t)&& e_t != startnode.tile)
                         {
                             if (!tile_nodes.ContainsKey(e_t) || tile_nodes[e_t] == targetnode)
@@ -163,7 +167,7 @@ namespace AStar
                     }
                 }
             }
-
+            Debug.Log(sw.ElapsedMilliseconds);
             targetnode.nodeType = NodeType.TARGET;
             //Back track to find the path
             if (targetnode.ParentNode != null)

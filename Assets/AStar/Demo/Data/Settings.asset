@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Settings
   m_EditorClassIdentifier: 
   layers:
-  - layerID: BLOCK
   - layerID: BLANK
+  - layerID: BLOCK
   - layerID: AGENT

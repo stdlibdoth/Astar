@@ -18,9 +18,9 @@ namespace AStar
     [RequireComponent(typeof(Collider))]
     public class AStarTile : MonoBehaviour
     {
-        //[Header("References")]
-        //[SerializeField] protected Material m_blankMat = null;
-        //[SerializeField] protected Material m_blockMat = null;
+        [Header("References")]
+        [SerializeField] protected Material m_blankMat = null;
+        [SerializeField] protected Material m_blockMat = null;
 
         [SerializeField] protected AStarLayer m_astarLayer;
 
@@ -36,16 +36,16 @@ namespace AStar
             set
             {
                 m_astarLayer = value;
-                Dispatcher.Current.BeginInvoke(() =>
-                {
-                    MeshRenderer mr = GetComponentInChildren<MeshRenderer>();
-                    if (!mr)
-                        return;
+                //Dispatcher.Current.BeginInvoke(() =>
+                //{
+                //    MeshRenderer mr = GetComponentInChildren<MeshRenderer>();
+                //    if (!mr)
+                //        return;
 
-                    //if (m_astarLayer.layerID == "BLANK")
-                    //    mr.material = m_blankMat;
-                    //else
-                    //    mr.material = m_blockMat;
+                //    if (m_astarLayer.layerID == "BLANK")
+                //        mr.material = m_blankMat;
+                //    else
+                //        mr.material = m_blockMat;
                     //switch (value)
                     //{
                     //    case TileType.BLANK:
@@ -59,7 +59,7 @@ namespace AStar
                     //    default:
                     //        break;
                     //}
-                });
+                //});
             }
         }
         public int X { get; protected set; }
