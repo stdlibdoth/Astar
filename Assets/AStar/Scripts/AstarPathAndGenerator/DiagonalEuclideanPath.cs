@@ -167,7 +167,6 @@ namespace AStar
                     }
                 }
             }
-            Debug.Log(sw.ElapsedMilliseconds);
             targetnode.nodeType = NodeType.TARGET;
             //Back track to find the path
             if (targetnode.ParentNode != null)

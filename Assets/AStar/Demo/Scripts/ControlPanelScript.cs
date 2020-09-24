@@ -61,10 +61,13 @@ public class ControlPanelScript : MonoBehaviour
     private bool m_pressureTestFlag;
     private List<AStarTile> m_pressureTestStartTiles;
     private List<AStarTile> m_pressureTestTargetTiles;
+    private List<Vector2Int> m_tempWayPoints;
+
 
     private void Awake()
     {
         m_agentToggles = new HashSet<AgentToggleScript>();
+        m_tempWayPoints = new List<Vector2Int>();
     }
 
     private void OnEnable()
@@ -96,7 +99,7 @@ public class ControlPanelScript : MonoBehaviour
     {
         foreach (AgentToggleScript t in m_agentToggles)
         {
-            t.Agent.gameObject.SetActive(false);
+            t.Agent?.gameObject?.SetActive(false);
             t.Agent.ActiveOverlay(false);
         }
         StopPressureTest();
@@ -296,11 +299,11 @@ public class ControlPanelScript : MonoBehaviour
         m_agentToggles.Remove(toggle_script);
     }
 
-    private void SpawnAgent(AStarTile startTile, AStarTile targetTile, string id)
+    private void SpawnAgent(AStarTile startTile, Vector2Int[] way_points, string id)
     {
         GameObject g = Instantiate(m_charPrefab, new Vector3(startTile.transform.position.x, 0, startTile.transform.position.z), Quaternion.identity);
         g.name = id;
-        g.GetComponent<MoveAgent>().SetTarget(new Vector2Int(targetTile.X, targetTile.Y));
+        g.GetComponent<MoveAgent>().SetWayPoints(way_points);
         AgentToggleScript agentToggle = Instantiate(m_agentTogglePrefab, m_toggleParent).Init(this, g.GetComponent<MoveAgent>());
         g.GetComponent<MoveAgent>().OnArrival.AddListener(() =>
         {
@@ -352,13 +355,10 @@ public class ControlPanelScript : MonoBehaviour
 
     private void Update()
     {
-        AStarTile tempTargetTile = null;
-
-
         if(m_pressureTestFlag && m_pressureTestStartTiles.Count>0)
         {
             int count = m_pressureTestStartTiles.Count + m_pressureTestTargetTiles.Count;
-            SpawnAgent(m_pressureTestStartTiles[0], m_pressureTestTargetTiles[0], "1");
+            SpawnAgent(m_pressureTestStartTiles[0], new Vector2Int[] {new Vector2Int(m_pressureTestTargetTiles[0].X, m_pressureTestTargetTiles[0].X) }, "1");
             m_pressureTestStartTiles.RemoveAt(0);
             m_pressureTestTargetTiles.RemoveAt(0);
         }
@@ -384,9 +384,12 @@ public class ControlPanelScript : MonoBehaviour
                         AStarTile tile = hit1.transform.GetComponent<AStarTile>();
                         if (tile && tile.Layer.layerID != "BLOCK")
                         {
+                            m_tempWayPoints.Clear();
                             m_tempStartTile = tile;
                             m_line = Instantiate(m_linePrefab);
-                            m_line.transform.position = m_tempStartTile.transform.position;
+                            //m_line.transform.position = m_line.transform.InverseTransformPoint(tile.transform.position) + new Vector3(0, 0.03f, 0);
+                            m_line.SetPosition(0, m_tempStartTile.transform.position + new Vector3(0, 0.03f, 0));
+                            m_line.positionCount++;
                             InputState = InputState.WAITING_TARGET;
                         }
                     }
@@ -399,16 +402,28 @@ public class ControlPanelScript : MonoBehaviour
                 if (Physics.Raycast(r2, out hit2, LayerMask.GetMask("AstarTile")))
                 {
                     AStarTile tile = hit2.transform.GetComponent<AStarTile>();
-                    if (tile && tile.Layer.layerID != "BLOCK" && tile != tempTargetTile)
+                    if (tile && tile.Layer.layerID != "BLOCK" && !m_tempWayPoints.Contains(new Vector2Int(tile.X,tile.Y)))
                     {
-                        m_line.SetPosition(1, m_line.transform.InverseTransformPoint(tile.transform.position) + new Vector3(0,0.03f,0));
+                        m_line.SetPosition(m_line.positionCount-1, m_line.transform.InverseTransformPoint(tile.transform.position) + new Vector3(0,0.03f,0));
                         if (Input.GetMouseButtonDown(0))
                         {
-                            tempTargetTile = tile;
-                            SpawnAgent(m_tempStartTile, tempTargetTile, m_newPathInput.text);
+                            m_tempWayPoints.Add(new Vector2Int(tile.X, tile.Y));
+                            Vector3[] waypoints = new Vector3[m_tempWayPoints.Count + 1];
+                            waypoints[0] = m_tempStartTile.transform.position + new Vector3(0, 0.03f, 0);
+                            for (int i = 0; i < m_tempWayPoints.Count; i++)
+                            {
+                                waypoints[i + 1] = AStarManager.Grids[m_uiTag.CurrentPage].GetTile(m_tempWayPoints[i].x, m_tempWayPoints[i].y).transform.position + new Vector3(0, 0.03f, 0);
+                                m_line.SetPosition(i, waypoints[i]);
+                            }
                             m_newPathInput.text = "";
                             m_newPathInput.ActivateInputField();
+                            m_line.positionCount++;
+                            m_line.SetPosition(m_line.positionCount - 1, m_line.transform.InverseTransformPoint(tile.transform.position) + new Vector3(0, 0.03f, 0));
+                        }
+                        else if(Input.GetMouseButtonDown(1))
+                        {
                             m_uiBlocker.gameObject.SetActive(false);
+                            SpawnAgent(m_tempStartTile, m_tempWayPoints.ToArray(), m_newPathInput.text);
                             Destroy(m_line.gameObject);
                             InputState = InputState.COMPLETE;
                         }
@@ -471,7 +486,7 @@ public class ControlPanelScript : MonoBehaviour
                             {
                                 if (t.GetComponent<Toggle>() != null && t.GetComponent<Toggle>().isOn)
                                 {
-                                    t.Agent.SetTarget(new Vector2Int(target.X, target.Y));
+                                    t.Agent.SetWayPoints(new Vector2Int[] { new Vector2Int(target.X,target.Y)});
                                 }
                             }
                             m_CommonTarget.gameObject.SetActive(false);
@@ -495,12 +510,14 @@ public class ControlPanelScript : MonoBehaviour
                 InputState == InputState.SETTING_TARGET)
             {
                 InputState = InputState.COMPLETE;
-                if(m_line!= null)
+                if (m_line != null)
+                {
                     Destroy(m_line.gameObject);
+                    m_tempWayPoints.Clear();
+                }
                 m_uiBlocker.gameObject.SetActive(false);
                 m_CommonTarget.gameObject.SetActive(false);
             }
         }
     }
-
 }

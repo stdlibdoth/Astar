@@ -73,7 +73,7 @@ namespace AStar
         {
             if (!active)
             {
-                m_lineOverlay.gameObject.SetActive(false);
+                m_lineOverlay?.gameObject.SetActive(false);
                 while (m_overlays.Count > 0)
                 {
                     m_overlays[0].ReturnToPool();

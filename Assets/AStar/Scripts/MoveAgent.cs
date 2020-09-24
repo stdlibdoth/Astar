@@ -14,8 +14,8 @@ namespace AStar
         TARGETED,   //Destination tile set and initial path found
         ROUTING,    //Finding path, waiting for A* algorithm to finish
         ROUTED,     //A* finished
-        ARRIVING,   //Arrived at destination. Sending arrived message at next frame
-        ARRIVED,    //Arrived. Message sent
+        WAYPOINT,   //Arrived at waypoint.
+        ARRIVED,    //Completed all waypoints. Message sent
     }
 
     [RequireComponent(typeof(PathGenerator))]
@@ -23,7 +23,8 @@ namespace AStar
     {
         protected UnityEvent m_onArrival;
         protected int m_id;
-        [SerializeField]protected List<AStarTile> m_waypointTiles;
+        protected List<AStarTile> m_pathTiles;
+        protected List<Vector2Int> m_waypoints;
 
         [Header("Astar Tile Layer Mask")]
         [SerializeField] protected LayerMask m_tileLayerMask;
@@ -90,8 +91,8 @@ namespace AStar
         {
             get
             {
-                if (m_waypointTiles != null && m_waypointTiles.Count > 1)
-                    return m_waypointTiles[1];
+                if (m_pathTiles != null && m_pathTiles.Count > 1)
+                    return m_pathTiles[1];
                 return null;
             }
         }
@@ -174,8 +175,25 @@ namespace AStar
             }
             return agents;
         }
+        public void SetWayPoints(Vector2Int[] way_points)
+        {
+            if (way_points == null) return;
+            if (way_points.Length == 0) return;
+            m_waypoints = new List<Vector2Int>();
+            for (int i = 0; i < way_points.Length; i++)
+                m_waypoints.Add(way_points[i]);
+            SetTarget(m_waypoints[0]);
+            m_waypoints.RemoveAt(0);
+        }
 
-        public void SetTarget(Vector2Int target, UnityAction arrival_action = null)
+        public void ApendWayPoints(Vector2Int[] way_points)
+        {
+            if (way_points == null) return;
+            for (int i = 0; i < way_points.Length; i++)
+                m_waypoints.Add(way_points[i]);
+        }
+
+        protected virtual void SetTarget(Vector2Int target)
         {
             AStarTile s_tile = CurrentTile;
             if (s_tile == null) return;
@@ -183,9 +201,6 @@ namespace AStar
             Grid = s_tile.Grid;
             m_targetTile = s_tile.Grid.GetTile(target.x, target.y);
             AgentState = AgentState.TARGETING;
-            if (arrival_action != null)
-                m_onArrival.AddListener(arrival_action);
-
 
             m_astarThread?.Abort();
             s_tile.Layer = m_astarLayer;
@@ -194,11 +209,12 @@ namespace AStar
             m_astarFlag = false;
             m_astarThread = new Thread(TargetRoute);
             m_astarThread.Start();
-
         }
 
-        //Callded in every frame if at least two way points exist. Override to customize the move behavior
-        protected abstract void Move(List<AStarTile> way_points);
+
+        //Callded in every frame if at least two path tiles exist. Override to customize the move behavior
+        protected abstract void MoveToNextWayPoint();
+
 
         public void ActiveOverlay(bool active)
         {
@@ -223,7 +239,7 @@ namespace AStar
             descreteMovement = true;
             if (oaMode == OAMode.PASSIVE)
             {
-                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+                m_pathTiles = new List<AStarTile>(m_tempPath.PathTiles);
 
                 //remove excessive tiles in the path caused by delay
                 int index = -1;
@@ -232,13 +248,13 @@ namespace AStar
                     index++;
                 } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
 
-                m_waypointTiles.RemoveRange(0, index);
-                if (m_waypointTiles.Count > 2)
-                    m_waypointTiles.RemoveRange(2, m_waypointTiles.Count - 2);
+                m_pathTiles.RemoveRange(0, index);
+                if (m_pathTiles.Count > 2)
+                    m_pathTiles.RemoveRange(2, m_pathTiles.Count - 2);
             }
             else if (oaMode == OAMode.ACTIVE)
             {
-                if (m_waypointTiles != null && m_waypointTiles.Count >= 2)
+                if (m_pathTiles != null && m_pathTiles.Count >= 2)
                     m_astarFlag = true;
             }
         }
@@ -286,12 +302,19 @@ namespace AStar
         //movement state machine
         private void Update()
         {
-
-            if (AgentState == AgentState.ARRIVING)
+            if (AgentState == AgentState.WAYPOINT)
             {
-                AgentState = AgentState.ARRIVED;
-                m_onArrival.Invoke();
-                m_onArrival.RemoveAllListeners();
+                if (m_waypoints.Count == 0)
+                {
+                    AgentState = AgentState.ARRIVED;
+                    m_onArrival.Invoke();
+                    m_onArrival.RemoveAllListeners();
+                }
+                else
+                {
+                    SetTarget(m_waypoints[0]);
+                    m_waypoints.RemoveAt(0);
+                }
             }
 
             else if (AgentState != AgentState.ARRIVED && AgentState != AgentState.TARGETING && AgentState != AgentState.IDLE)
@@ -303,29 +326,24 @@ namespace AStar
                 }
 
 
-                if (m_waypointTiles.Count >= 2)
+                if (m_pathTiles.Count >= 2)
                 {
-                    float dist = Vector3.Distance(m_waypointTiles[1].transform.position, m_moveTrans.position);
+                    float dist = Vector3.Distance(m_pathTiles[1].transform.position, m_moveTrans.position);
                     if (dist < 0.01f)
                     {
-                        //if(m_waypointTiles[0].Agent == this)
-                        //{
-                        //    m_waypointTiles[0].Agent = null;
-                        //    m_waypointTiles[0].Layer = m_waypointTiles[0].InitialLayer;
-                        //}
-                        m_waypointTiles.RemoveAt(0);
-                        m_currentTile = m_waypointTiles[0];
+                        m_pathTiles.RemoveAt(0);
+                        m_currentTile = m_pathTiles[0];
                     }
 
                     //Passive mode. Start finding path only if the original path is blocked
                     if (oaMode == OAMode.PASSIVE)
                     {
                         m_astarFlag = false;
-                        int count = m_waypointTiles.Count;
+                        int count = m_pathTiles.Count;
                         int i = 1;
                         while (i < count)
                         {
-                            if (CheckObstacle(m_waypointTiles[i]))
+                            if (CheckObstacle(m_pathTiles[i]))
                             {
                                 m_astarFlag = true;
                                 break;
@@ -337,13 +355,13 @@ namespace AStar
                     //Active mode. Start path finding when the distance to the next tile is small enough
                     if (!descreteMovement && oaMode == OAMode.ACTIVE)
                     {
-                        if (m_waypointTiles.Count >= 2 && dist <= m_instantSpeed * m_astarTime + 0.01f &&
-                            m_activeModePrevNextTile != m_waypointTiles[1])
+                        if (m_pathTiles.Count >= 2 && dist <= m_instantSpeed * m_astarTime + 0.01f &&
+                            m_activeModePrevNextTile != m_pathTiles[1])
                         {
                             m_astarFlag = true;
-                            m_activeModePrevNextTile = m_waypointTiles[1];
+                            m_activeModePrevNextTile = m_pathTiles[1];
                         }
-                        else if (m_waypointTiles.Count >= 2 && m_activeModePrevNextTile == m_waypointTiles[1])
+                        else if (m_pathTiles.Count >= 2 && m_activeModePrevNextTile == m_pathTiles[1])
                         {
                             m_astarFlag = false;
                         }
@@ -358,22 +376,22 @@ namespace AStar
                             tile.Layer = tile.InitialLayer;
                         }
                     }
-                    if (m_waypointTiles.Count > 1 && m_waypointTiles[1].Agent == null && !CheckObstacle(m_waypointTiles[1]))
+                    if (m_pathTiles.Count > 1 && m_pathTiles[1].Agent == null && !CheckObstacle(m_pathTiles[1]))
                     {
-                        m_waypointTiles[1].Agent = this;
-                        m_waypointTiles[1].Layer = m_astarLayer;
+                        m_pathTiles[1].Agent = this;
+                        m_pathTiles[1].Layer = m_astarLayer;
                     }
                 }
 
                 //move agent
-                if (m_waypointTiles.Count >= 2)
+                if (m_pathTiles.Count >= 2)
                 {
-                    Move(m_waypointTiles);
+                    MoveToNextWayPoint();
                 }
 
 
                 if (CurrentTile == m_targetTile)
-                    AgentState = AgentState.ARRIVING;
+                    AgentState = AgentState.WAYPOINT;
                 else
                 {
                     //start pathfinding thread
@@ -381,7 +399,6 @@ namespace AStar
                     {
                         if (m_tempPath.Successful)
                         {
-                            print("1");
                             m_astarTime = 0;
                             AgentState = AgentState.ROUTING;
                             m_astarThread.Abort();
@@ -408,28 +425,28 @@ namespace AStar
 
             if (!descreteMovement && m_tempPath.Successful)
             {
-                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+                m_pathTiles = new List<AStarTile>(m_tempPath.PathTiles);
                 int index = -1;
                 do
                 {
                     index++;
                 } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
 
-                m_waypointTiles.RemoveRange(0, index);
+                m_pathTiles.RemoveRange(0, index);
             }
             else if (descreteMovement && m_tempPath.Successful)
             {
-                m_waypointTiles = new List<AStarTile>();
+                m_pathTiles = new List<AStarTile>();
             }
             else if (!m_tempPath.Successful)
             {
-                if (m_waypointTiles != null && m_waypointTiles.Count>1)
+                if (m_pathTiles != null && m_pathTiles.Count>1)
                 {
-                    m_waypointTiles[0].Layer = m_astarLayer;
-                    m_waypointTiles[0].Agent = this;
-                    m_waypointTiles[1].Layer = m_waypointTiles[1].InitialLayer;
+                    m_pathTiles[0].Layer = m_astarLayer;
+                    m_pathTiles[0].Agent = this;
+                    m_pathTiles[1].Layer = m_pathTiles[1].InitialLayer;
                 }
-                m_waypointTiles = new List<AStarTile>();
+                m_pathTiles = new List<AStarTile>();
             }
             m_astarFlag = m_tempPath.Successful ? false : true;
             AgentState = AgentState.TARGETED;
@@ -441,7 +458,7 @@ namespace AStar
             m_overlayUpdated = false;
             if (m_tempPath.Successful)
             {
-                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+                m_pathTiles = new List<AStarTile>(m_tempPath.PathTiles);
 
                 //remove excessive tiles in the path due to delay caused by "GeneratePath"
                 int index = -1;
@@ -450,16 +467,16 @@ namespace AStar
                     index++;
                 } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
 
-                m_waypointTiles.RemoveRange(0, index);
+                m_pathTiles.RemoveRange(0, index);
 
-                if (m_waypointTiles.Count > 2 && descreteMovement)
-                    m_waypointTiles.RemoveRange(2, m_waypointTiles.Count - 2);
+                if (m_pathTiles.Count > 2 && descreteMovement)
+                    m_pathTiles.RemoveRange(2, m_pathTiles.Count - 2);
             }
             else if (!m_tempPath.Successful)
             {
-                if (m_waypointTiles.Count > 2 && m_waypointTiles[1].Agent == this)
-                    m_waypointTiles[1].Layer = m_waypointTiles[1].InitialLayer;
-                m_waypointTiles = new List<AStarTile>();
+                if (m_pathTiles.Count > 2 && m_pathTiles[1].Agent == this)
+                    m_pathTiles[1].Layer = m_pathTiles[1].InitialLayer;
+                m_pathTiles = new List<AStarTile>();
             }
             m_astarFlag = !descreteMovement;
             if (m_astarTime < m_deltaTime && m_tempPath.Successful)
@@ -474,24 +491,24 @@ namespace AStar
 
             if (!descreteMovement && m_tempPath.Successful)
             {
-                m_waypointTiles = new List<AStarTile>(m_tempPath.PathTiles);
+                m_pathTiles = new List<AStarTile>(m_tempPath.PathTiles);
                 int index = -1;
                 do
                 {
                     index++;
                 } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
-                m_waypointTiles.RemoveRange(0, index);
-                if(m_waypointTiles.Count>1)
+                m_pathTiles.RemoveRange(0, index);
+                if(m_pathTiles.Count>1)
                 {
-                    m_waypointTiles[1].Agent = this;
-                    m_waypointTiles[1].Layer = m_astarLayer;
+                    m_pathTiles[1].Agent = this;
+                    m_pathTiles[1].Layer = m_astarLayer;
                 }
             }
             else if (descreteMovement && m_tempPath.Successful)
             {
-                m_waypointTiles = new List<AStarTile>();
-                m_waypointTiles.Add(m_tempPath.PathTiles[0]);
-                m_waypointTiles.Add(m_tempPath.PathTiles[1]);
+                m_pathTiles = new List<AStarTile>();
+                m_pathTiles.Add(m_tempPath.PathTiles[0]);
+                m_pathTiles.Add(m_tempPath.PathTiles[1]);
             }
             if (m_astarTime < m_deltaTime && m_tempPath.Successful)
                 m_astarFlag = false;
@@ -499,9 +516,10 @@ namespace AStar
 
         private void OnDestroy()
         {
+            if (AgentState == AgentState.IDLE) return;
             m_astarThread.Abort();
             CurrentTile.Layer = CurrentTile.InitialLayer;
-            if (AgentState != AgentState.IDLE && NextTile && NextTile.Agent == this)
+            if (NextTile && NextTile.Agent == this)
             {
                 NextTile.Layer = NextTile.InitialLayer;
                 NextTile.Agent = null;
