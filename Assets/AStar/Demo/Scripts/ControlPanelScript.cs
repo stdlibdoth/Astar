@@ -191,7 +191,6 @@ public class ControlPanelScript : MonoBehaviour
             {
                 if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
                 {
-                    t.GetComponent<AgentToggleScript>().Agent.descreteMovement = false;
                     t.GetComponent<AgentToggleScript>().Agent.ResumeMovement();
                 }
             }
@@ -202,7 +201,7 @@ public class ControlPanelScript : MonoBehaviour
             foreach (AgentToggleScript t in m_agentToggles)
             {
                 if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
-                    t.GetComponent<AgentToggleScript>().Agent.Halt();
+                    t.GetComponent<AgentToggleScript>().Agent.Pause();
             }
         });
 
@@ -212,7 +211,6 @@ public class ControlPanelScript : MonoBehaviour
             {
                 if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
                 {
-                    t.GetComponent<AgentToggleScript>().Agent.descreteMovement = true;
                     t.GetComponent<AgentToggleScript>().Agent.ResumeMovement();
                 }
             }

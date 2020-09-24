@@ -55,6 +55,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -79,6 +80,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &884220325778017314
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,16 +138,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67a71f1bb4f71474883db776d3ac7058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_waypointTiles: []
   m_tileLayerMask:
     serializedVersion: 2
     m_Bits: 256
   m_pathOverlay: {fileID: 800462111247003252}
   m_moveTrans: {fileID: 884220325778017326}
-  descreteMovement: 0
   m_pathGenerator: {fileID: 0}
   oaMode: 0
   m_obstacleSetting: {fileID: 11400000, guid: f5af874747c3d8e4aac533890a295a72, type: 2}
+  pauseAtWaypoint: 1
   constSpeed: 1
   m_nameTag: {fileID: 5807420817306043855}
 --- !u!114 &800462111247003252
@@ -308,6 +309,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -332,6 +334,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &3864700015396555766
 GameObject:
   m_ObjectHideFlags: 0
@@ -379,6 +382,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -403,6 +407,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!102 &5807420817306043855
 TextMesh:
   serializedVersion: 3
@@ -480,6 +485,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -504,3 +510,4 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
