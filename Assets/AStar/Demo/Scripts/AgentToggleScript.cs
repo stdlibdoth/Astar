@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using AStar;
 
-[RequireComponent(typeof(Toggle))]
 public class AgentToggleScript : MonoBehaviour
 {
     [SerializeField] private Toggle m_agentToggle = null;

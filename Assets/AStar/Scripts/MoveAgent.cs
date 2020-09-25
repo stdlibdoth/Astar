@@ -40,7 +40,8 @@ namespace AStar
         [SerializeField] protected AgentObstacleSetting m_obstacleSetting = null;
         [Header("Pause at way point")]
         [SerializeField] public bool pauseAtWaypoint = false;
-
+        [Header("Time interval between retrys")]
+        [SerializeField] public float retryInterval = 1.5f;
 
         private AStarPath m_tempPath;
         private AStarTile m_targetTile;
@@ -55,7 +56,6 @@ namespace AStar
         private AStarLayer m_astarLayer;
         private List<AStarLayer> m_obstacleLayers;
         private AStarTile m_activeModePrevNextTile;
-        private float m_unsuccessfulInterval = 1.5f;
         private float m_prevUnsuccessfulTime;
 
 
@@ -322,70 +322,71 @@ namespace AStar
                     m_overlayUpdated = true;
                 }
 
-
-                if (m_pathTiles.Count >= 2)
+                if (m_pathTiles != null)
                 {
-                    float dist = Vector3.Distance(m_pathTiles[1].transform.position, m_moveTrans.position);
-                    if (dist < 0.01f)
+                    if (m_pathTiles.Count >= 2)
                     {
-                        m_pathTiles.RemoveAt(0);
-                        m_currentTile = m_pathTiles[0];
-                    }
-
-                    //Passive mode. Start finding path only if the original path is blocked
-                    if (oaMode == OAMode.PASSIVE)
-                    {
-                        m_astarFlag = false;
-                        int count = m_pathTiles.Count;
-                        int i = 1;
-                        while (i < count)
+                        float dist = Vector3.Distance(m_pathTiles[1].transform.position, m_moveTrans.position);
+                        if (dist < 0.01f)
                         {
-                            if (CheckObstacle(m_pathTiles[i]))
+                            m_pathTiles.RemoveAt(0);
+                            m_currentTile = m_pathTiles[0];
+                            //Passive mode. Start finding path only if the original path is blocked
+                            if (oaMode == OAMode.PASSIVE)
+                            {
+                                m_astarFlag = false;
+                                int count = m_pathTiles.Count;
+                                int i = 1;
+                                while (i < count)
+                                {
+                                    if (CheckObstacle(m_pathTiles[i]))
+                                    {
+                                        m_astarFlag = true;
+                                        break;
+                                    }
+                                    i++;
+                                }
+                            }
+                        }
+
+
+                        //Active mode. Start path finding when the distance to the next tile is small enough
+                        else if (oaMode == OAMode.ACTIVE)
+                        {
+                            if (m_pathTiles.Count >= 2 && dist <= m_instantSpeed * m_astarTime + 0.01f &&
+                                m_activeModePrevNextTile != m_pathTiles[1])
                             {
                                 m_astarFlag = true;
-                                break;
+                                m_activeModePrevNextTile = m_pathTiles[1];
                             }
-                            i++;
+                            else if (m_pathTiles.Count >= 2 && m_activeModePrevNextTile == m_pathTiles[1])
+                            {
+                                m_astarFlag = false;
+                            }
+                        }
+
+                        List<AStarTile> adjacent = Grid.GetAdjacentTiles(m_currentTile);
+                        foreach (AStarTile tile in adjacent)
+                        {
+                            if (tile.Agent == this)
+                            {
+                                tile.Agent = null;
+                                tile.Layer = tile.InitialLayer;
+                            }
+                        }
+                        if (m_pathTiles.Count > 1 && m_pathTiles[1].Agent == null && !CheckObstacle(m_pathTiles[1]))
+                        {
+                            m_pathTiles[1].Agent = this;
+                            m_pathTiles[1].Layer = m_astarLayer;
                         }
                     }
 
-                    //Active mode. Start path finding when the distance to the next tile is small enough
-                    else if (oaMode == OAMode.ACTIVE)
+                    //move agent
+                    if (m_pathTiles.Count >= 2)
                     {
-                        if (m_pathTiles.Count >= 2 && dist <= m_instantSpeed * m_astarTime + 0.01f &&
-                            m_activeModePrevNextTile != m_pathTiles[1])
-                        {
-                            m_astarFlag = true;
-                            m_activeModePrevNextTile = m_pathTiles[1];
-                        }
-                        else if (m_pathTiles.Count >= 2 && m_activeModePrevNextTile == m_pathTiles[1])
-                        {
-                            m_astarFlag = false;
-                        }
-                    }
-
-                    List<AStarTile> adjacent = Grid.GetAdjacentTiles(m_currentTile);
-                    foreach (AStarTile tile in adjacent)
-                    {
-                        if (tile.Agent == this)
-                        {
-                            tile.Agent = null;
-                            tile.Layer = tile.InitialLayer;
-                        }
-                    }
-                    if (m_pathTiles.Count > 1 && m_pathTiles[1].Agent == null && !CheckObstacle(m_pathTiles[1]))
-                    {
-                        m_pathTiles[1].Agent = this;
-                        m_pathTiles[1].Layer = m_astarLayer;
+                        MoveToNextWayPoint();
                     }
                 }
-
-                //move agent
-                if (m_pathTiles.Count >= 2)
-                {
-                    MoveToNextWayPoint();
-                }
-
 
                 if (CurrentTile == m_targetTile)
                     AgentState = AgentState.WAYPOINT;
@@ -402,7 +403,7 @@ namespace AStar
                             m_astarThread = new Thread(AstarWorker1);
                             m_astarThread.Start();
                         }
-                        else if (!m_tempPath.Successful && Time.unscaledTime - m_prevUnsuccessfulTime > m_unsuccessfulInterval)
+                        else if (!m_tempPath.Successful && Time.unscaledTime - m_prevUnsuccessfulTime > retryInterval)
                         {
                             m_astarThread.Abort();
                             m_astarThread = new Thread(AstarWorker2);
@@ -433,12 +434,31 @@ namespace AStar
             }
             else if (!m_tempPath.Successful)
             {
-                if (m_pathTiles != null && m_pathTiles.Count>1)
+                //if (m_pathTiles != null)
+                //{
+                //    for (int i = 0; i < m_pathTiles.Count; i++)
+                //    {
+                //        if (m_pathTiles[i] == m_currentTile)
+                //        {
+                //            m_pathTiles[i].Agent = this;
+                //            m_pathTiles[i].Layer = m_astarLayer;
+                //            if (m_pathTiles[i + 1].Agent == this)
+                //            {
+                //                m_pathTiles[i + 1].Layer = m_pathTiles[i].InitialLayer;
+                //                m_pathTiles[i + 1].Agent = null;
+                //            }
+                //            break;
+                //        }
+                //    }
+                //}
+
+                if (m_pathTiles != null && m_pathTiles.Count > 1)
                 {
                     m_pathTiles[0].Layer = m_astarLayer;
                     m_pathTiles[0].Agent = this;
                     m_pathTiles[1].Layer = m_pathTiles[1].InitialLayer;
                 }
+
                 m_pathTiles = new List<AStarTile>();
             }
             m_astarFlag = m_tempPath.Successful ? false : true;
@@ -461,39 +481,46 @@ namespace AStar
                 } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
 
                 m_pathTiles.RemoveRange(0, index);
+                if (m_astarTime < m_deltaTime)
+                    m_astarFlag = false;
             }
             else if (!m_tempPath.Successful)
             {
-                if (m_pathTiles.Count > 2 && m_pathTiles[1].Agent == this)
-                    m_pathTiles[1].Layer = m_pathTiles[1].InitialLayer;
-                m_pathTiles = new List<AStarTile>();
+                for (int i = 0; i <m_pathTiles.Count; i++)
+                {
+                    if(m_pathTiles[i] != m_currentTile)
+                    {
+                        m_pathTiles[i].Layer = m_pathTiles[i].InitialLayer;
+                        m_pathTiles[i].Agent = null;
+                        break;
+                    }
+                }
+                m_pathTiles.Clear();
             }
-            if (m_astarTime < m_deltaTime && m_tempPath.Successful)
-                m_astarFlag = false;
             AgentState = AgentState.ROUTED;
         }
 
         private void AstarWorker2()
         {
             AgentState = AgentState.ROUTING;
-            m_tempPath = m_pathGenerator.GeneratePath(Grid, CurrentTile, m_targetTile,this);
+            m_tempPath = m_pathGenerator.GeneratePath(Grid, CurrentTile, m_targetTile, this);
 
-            if (m_tempPath.Successful)
+            if (!m_tempPath.Successful) return;
+
+            m_pathTiles = new List<AStarTile>(m_tempPath.PathTiles);
+            int index = -1;
+            do
             {
-                m_pathTiles = new List<AStarTile>(m_tempPath.PathTiles);
-                int index = -1;
-                do
-                {
-                    index++;
-                } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
-                m_pathTiles.RemoveRange(0, index);
-                if(m_pathTiles.Count>1)
-                {
-                    m_pathTiles[1].Agent = this;
-                    m_pathTiles[1].Layer = m_astarLayer;
-                }
+                index++;
+            } while (index < m_tempPath.PathTiles.Count && m_tempPath.PathTiles[index] != m_currentTile);
+            m_pathTiles.RemoveRange(0, index);
+            if (m_pathTiles.Count > 1)
+            {
+                m_pathTiles[1].Agent = this;
+                m_pathTiles[1].Layer = m_astarLayer;
             }
-            if (m_astarTime < m_deltaTime && m_tempPath.Successful)
+
+            if (m_astarTime < m_deltaTime)
                 m_astarFlag = false;
         }
 

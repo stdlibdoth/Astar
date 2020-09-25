@@ -7,13 +7,6 @@ using Battlehub.Dispatcher;
 
 namespace AStar
 {
-    //[System.Serializable]
-    //public enum TileType
-    //{
-    //    BLANK,
-    //    BLOCK,
-    //    AGENT,
-    //}
 
     [RequireComponent(typeof(Collider))]
     public class AStarTile : MonoBehaviour
@@ -24,7 +17,8 @@ namespace AStar
 
         [SerializeField] protected AStarLayer m_astarLayer;
 
-        public MoveAgent Agent { get; set; }
+        [SerializeField] MoveAgent m_agent;
+        public MoveAgent Agent { get { return m_agent; } set { m_agent = value; } }
 
         private AStarLayer m_initialLayer;
 
@@ -41,24 +35,12 @@ namespace AStar
                 //    MeshRenderer mr = GetComponentInChildren<MeshRenderer>();
                 //    if (!mr)
                 //        return;
-
                 //    if (m_astarLayer.layerID == "BLANK")
                 //        mr.material = m_blankMat;
                 //    else
+                //    {
                 //        mr.material = m_blockMat;
-                    //switch (value)
-                    //{
-                    //    case TileType.BLANK:
-                    //        mr.material = m_blankMat;
-                    //        //m_tileMesh.transform.localPosition = new Vector3(0, m_tileMesh.transform.localScale.y * 0.5f, 0);
-                    //        break;
-                    //    case TileType.AGENT:
-                    //    case TileType.BLOCK:
-                    //        mr.material = m_blockMat;
-                    //        break;
-                    //    default:
-                    //        break;
-                    //}
+                //    }
                 //});
             }
         }
@@ -79,7 +61,6 @@ namespace AStar
             GetComponent<Collider>().isTrigger = true;
             transform.localScale = new Vector3(grid.TileSize.x, transform.localScale.y, grid.TileSize.y);
             m_grid = grid;
-//            TileType = TileType.BLANK;
             X = x;
             Y = y;
             name = "(" + X + "," + Y + ")";

@@ -11,7 +11,6 @@ public class UITag : MonoBehaviour
     [SerializeField] private RectTransform m_pageContainer = null;
     [SerializeField] private UINewGridPanelScript m_newGridPanel = null;
 
-    [SerializeField] private Button m_infoBtn = null;
     [SerializeField] private Button m_newGridBtn = null;
     [SerializeField] private UITagHeaderButton m_tagHeaderBtnPrefab = null;
 
@@ -44,10 +43,6 @@ public class UITag : MonoBehaviour
     private void Start()
     {
         m_newGridBtn.onClick.AddListener(() => m_newGridPanel.gameObject.SetActive(true));
-        m_infoBtn.onClick.AddListener(() =>
-        {
-
-        });
     }
 
     public UITagHeaderButton AddPage(string header, RectTransform content_panel_template)

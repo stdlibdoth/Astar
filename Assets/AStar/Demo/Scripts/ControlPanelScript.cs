@@ -165,7 +165,7 @@ public class ControlPanelScript : MonoBehaviour
         {
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                Toggle to = t.GetComponent<Toggle>();
+                Toggle to = t.GetComponentInChildren<Toggle>();
                 if (to != null)
                 {
                     to.isOn = true;
@@ -177,7 +177,7 @@ public class ControlPanelScript : MonoBehaviour
         {
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                Toggle to = t.GetComponent<Toggle>();
+                Toggle to = t.GetComponentInChildren<Toggle>();
                 if (to != null)
                 {
                     to.isOn = !to.isOn;
@@ -189,9 +189,9 @@ public class ControlPanelScript : MonoBehaviour
         {
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
+                if (t.GetComponentInChildren<Toggle>() && t.GetComponentInChildren<Toggle>().isOn && t.Agent.gameObject.activeSelf)
                 {
-                    t.GetComponent<AgentToggleScript>().Agent.ResumeMovement();
+                    t.GetComponentInChildren<AgentToggleScript>().Agent.ResumeMovement();
                 }
             }
         });
@@ -200,8 +200,8 @@ public class ControlPanelScript : MonoBehaviour
         {
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
-                    t.GetComponent<AgentToggleScript>().Agent.Pause();
+                if (t.GetComponentInChildren<Toggle>() && t.GetComponentInChildren<Toggle>().isOn && t.Agent.gameObject.activeSelf)
+                    t.GetComponentInChildren<AgentToggleScript>().Agent.Pause();
             }
         });
 
@@ -209,9 +209,9 @@ public class ControlPanelScript : MonoBehaviour
         {
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn && t.Agent.gameObject.activeSelf)
+                if (t.GetComponentInChildren<Toggle>() && t.GetComponentInChildren<Toggle>().isOn && t.Agent.gameObject.activeSelf)
                 {
-                    t.GetComponent<AgentToggleScript>().Agent.ResumeMovement();
+                    t.GetComponentInChildren<AgentToggleScript>().Agent.ResumeMovement();
                 }
             }
         });
@@ -221,7 +221,7 @@ public class ControlPanelScript : MonoBehaviour
             List<AgentToggleScript> ts = new List<AgentToggleScript>();
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn)
+                if (t.GetComponentInChildren<Toggle>() && t.GetComponentInChildren<Toggle>().isOn)
                 {
                     MoveAgent.RemoveAgent(t.Agent);
                     Destroy(t.Agent.gameObject);
@@ -242,10 +242,10 @@ public class ControlPanelScript : MonoBehaviour
         {
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn)
+                if (t.GetComponentInChildren<Toggle>() && t.GetComponentInChildren<Toggle>().isOn)
                 {
                     MoveAgent agent = t.GetComponent<AgentToggleScript>().Agent;
-                    t.GetComponent<AgentToggleScript>().SetOverlayToggle(!agent.IsOverlayActive);
+                    t.GetComponentInChildren<AgentToggleScript>().SetOverlayToggle(!agent.IsOverlayActive);
                 }
             }
         });
@@ -254,10 +254,10 @@ public class ControlPanelScript : MonoBehaviour
         {
             foreach (AgentToggleScript t in m_agentToggles)
             {
-                if (t.GetComponent<Toggle>() && t.GetComponent<Toggle>().isOn)
+                if (t.GetComponentInChildren<Toggle>() && t.GetComponentInChildren<Toggle>().isOn)
                 {
-                    MoveAgent agent = t.GetComponent<AgentToggleScript>().Agent;
-                    t.GetComponent<AgentToggleScript>().SetVisibilityToggle(!agent.gameObject.activeSelf);
+                    MoveAgent agent = t.GetComponentInChildren<AgentToggleScript>().Agent;
+                    t.GetComponentInChildren<AgentToggleScript>().SetVisibilityToggle(!agent.gameObject.activeSelf);
                 }
             }
         });
@@ -301,11 +301,13 @@ public class ControlPanelScript : MonoBehaviour
     {
         GameObject g = Instantiate(m_charPrefab, new Vector3(startTile.transform.position.x, 0, startTile.transform.position.z), Quaternion.identity);
         g.name = id;
-        g.GetComponent<MoveAgent>().SetWayPoints(way_points);
-        AgentToggleScript agentToggle = Instantiate(m_agentTogglePrefab, m_toggleParent).Init(this, g.GetComponent<MoveAgent>());
-        g.GetComponent<MoveAgent>().OnArrival.AddListener(() =>
+        MoveAgent agent = g.GetComponent<MoveAgent>();
+        agent.SetWayPoints(way_points);
+        agent.oaMode = MoveAgent.OAMode.ACTIVE;
+        AgentToggleScript agentToggle = Instantiate(m_agentTogglePrefab, m_toggleParent).Init(this, agent);
+        agent.OnArrival.AddListener(() =>
         {
-            MoveAgent.RemoveAgent(g.GetComponent<MoveAgent>());
+            MoveAgent.RemoveAgent(agent);
             Destroy(g);
             Destroy(agentToggle.gameObject);
             m_agentToggles.Remove(agentToggle);
@@ -385,7 +387,6 @@ public class ControlPanelScript : MonoBehaviour
                             m_tempWayPoints.Clear();
                             m_tempStartTile = tile;
                             m_line = Instantiate(m_linePrefab);
-                            //m_line.transform.position = m_line.transform.InverseTransformPoint(tile.transform.position) + new Vector3(0, 0.03f, 0);
                             m_line.SetPosition(0, m_tempStartTile.transform.position + new Vector3(0, 0.03f, 0));
                             m_line.positionCount++;
                             InputState = InputState.WAITING_TARGET;
@@ -396,7 +397,7 @@ public class ControlPanelScript : MonoBehaviour
             case InputState.WAITING_TARGET:
                 Ray r2 = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit2;
-                m_uiBlocker.GetComponentInChildren<Text>().text = "\"ESC\"=Cancel" + System.Environment.NewLine + "Left Click=Destination";
+                m_uiBlocker.GetComponentInChildren<Text>().text = "\"ESC\"=Cancel" + System.Environment.NewLine + "Left Click=Set Waypoints" + System.Environment.NewLine + "Right Click=Spawn Agent";
                 if (Physics.Raycast(r2, out hit2, LayerMask.GetMask("AstarTile")))
                 {
                     AStarTile tile = hit2.transform.GetComponent<AStarTile>();
@@ -413,15 +414,20 @@ public class ControlPanelScript : MonoBehaviour
                                 waypoints[i + 1] = AStarManager.Grids[m_uiTag.CurrentPage].GetTile(m_tempWayPoints[i].x, m_tempWayPoints[i].y).transform.position + new Vector3(0, 0.03f, 0);
                                 m_line.SetPosition(i, waypoints[i]);
                             }
-                            m_newPathInput.text = "";
-                            m_newPathInput.ActivateInputField();
                             m_line.positionCount++;
                             m_line.SetPosition(m_line.positionCount - 1, m_line.transform.InverseTransformPoint(tile.transform.position) + new Vector3(0, 0.03f, 0));
                         }
                         else if(Input.GetMouseButtonDown(1))
                         {
                             m_uiBlocker.gameObject.SetActive(false);
-                            SpawnAgent(m_tempStartTile, m_tempWayPoints.ToArray(), m_newPathInput.text);
+                            if (m_tempWayPoints.Count > 0)
+                            {
+                                SpawnAgent(m_tempStartTile, m_tempWayPoints.ToArray(), m_newPathInput.text);
+                                m_newPathInput.text = "";
+                                m_newPathInput.ActivateInputField();
+                            }
+                            else
+                                m_tempWayPoints.Clear();
                             Destroy(m_line.gameObject);
                             InputState = InputState.COMPLETE;
                         }

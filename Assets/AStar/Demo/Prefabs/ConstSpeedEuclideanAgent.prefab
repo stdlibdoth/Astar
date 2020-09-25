@@ -143,10 +143,11 @@ MonoBehaviour:
     m_Bits: 256
   m_pathOverlay: {fileID: 800462111247003252}
   m_moveTrans: {fileID: 884220325778017326}
-  m_pathGenerator: {fileID: 0}
-  oaMode: 0
+  m_pathGenerator: {fileID: -3044669676003327923}
+  oaMode: 1
   m_obstacleSetting: {fileID: 11400000, guid: f5af874747c3d8e4aac533890a295a72, type: 2}
-  pauseAtWaypoint: 1
+  pauseAtWaypoint: 0
+  retryInterval: 1.5
   constSpeed: 1
   m_nameTag: {fileID: 5807420817306043855}
 --- !u!114 &800462111247003252
