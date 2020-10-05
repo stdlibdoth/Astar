@@ -11,7 +11,7 @@ public enum InputState
     WAITING_START,
     WAITING_TARGET,
     ADDING_BLOCK,
-    SETTING_TARGET,
+    //SETTING_TARGET,
 }
 
 
@@ -24,7 +24,7 @@ public class ControlPanelScript : MonoBehaviour
     [SerializeField] private Transform m_toggleParent = null;
     [SerializeField] private InputField m_newPathInput = null;
     [SerializeField] private Transform m_uiBlocker = null;
-    [SerializeField] private Transform m_CommonTarget = null;
+//    [SerializeField] private Transform m_CommonTarget = null;
     [SerializeField] private InputField m_gridXInput = null;
     [SerializeField] private InputField m_gridYInput = null;
 
@@ -40,7 +40,7 @@ public class ControlPanelScript : MonoBehaviour
     [SerializeField] private Button m_addAgentBtn = null;
     [SerializeField] private Button m_resetGridBtn = null;
     [SerializeField] private Button m_editBlockBtn = null;
-    [SerializeField] private Button m_setCommonTargetBtn = null;
+//    [SerializeField] private Button m_setCommonTargetBtn = null;
 
     [SerializeField] private Button m_startPressureTestBtn = null;
     [SerializeField] private Button m_stopPressureTestBtn = null;
@@ -262,13 +262,13 @@ public class ControlPanelScript : MonoBehaviour
             }
         });
 
-        m_setCommonTargetBtn.onClick.AddListener(() =>
-        {
-            //m_CommonTarget.gameObject.SetActive(true);
-            m_uiBlocker.GetComponentInChildren<Text>().text = "\"ESC\"=Cancel" + System.Environment.NewLine + "Left Click=Set";
-            m_uiBlocker.gameObject.SetActive(true);
-            InputState = InputState.SETTING_TARGET;
-        });
+        //m_setCommonTargetBtn.onClick.AddListener(() =>
+        //{
+        //    //m_CommonTarget.gameObject.SetActive(true);
+        //    m_uiBlocker.GetComponentInChildren<Text>().text = "\"ESC\"=Cancel" + System.Environment.NewLine + "Left Click=Set";
+        //    m_uiBlocker.gameObject.SetActive(true);
+        //    InputState = InputState.SETTING_TARGET;
+        //});
 
         m_startPressureTestBtn?.onClick.AddListener(() =>
         {
@@ -297,13 +297,13 @@ public class ControlPanelScript : MonoBehaviour
         m_agentToggles.Remove(toggle_script);
     }
 
-    private void SpawnAgent(AStarTile startTile, Vector2Int[] way_points, string id)
+    private void SpawnAgent(AStarTile startTile, Vector2Int[] way_points, string id, MoveAgent.OAMode oa_mode)
     {
         GameObject g = Instantiate(m_charPrefab, new Vector3(startTile.transform.position.x, 0, startTile.transform.position.z), Quaternion.identity);
-        g.name = id;
         MoveAgent agent = g.GetComponent<MoveAgent>();
+        agent.oaMode = oa_mode;
+        agent.name = id;
         agent.SetWayPoints(way_points);
-        agent.oaMode = MoveAgent.OAMode.ACTIVE;
         AgentToggleScript agentToggle = Instantiate(m_agentTogglePrefab, m_toggleParent).Init(this, agent);
         agent.OnArrival.AddListener(() =>
         {
@@ -358,7 +358,7 @@ public class ControlPanelScript : MonoBehaviour
         if(m_pressureTestFlag && m_pressureTestStartTiles.Count>0)
         {
             int count = m_pressureTestStartTiles.Count + m_pressureTestTargetTiles.Count;
-            SpawnAgent(m_pressureTestStartTiles[0], new Vector2Int[] {new Vector2Int(m_pressureTestTargetTiles[0].X, m_pressureTestTargetTiles[0].X) }, "1");
+            SpawnAgent(m_pressureTestStartTiles[0], new Vector2Int[] {new Vector2Int(m_pressureTestTargetTiles[0].X, m_pressureTestTargetTiles[0].X) }, "1",MoveAgent.OAMode.PASSIVE);
             m_pressureTestStartTiles.RemoveAt(0);
             m_pressureTestTargetTiles.RemoveAt(0);
         }
@@ -374,7 +374,7 @@ public class ControlPanelScript : MonoBehaviour
             case InputState.COMPLETE:
                 break;
             case InputState.WAITING_START:
-                m_uiBlocker.GetComponentInChildren<Text>().text = "\"ESC\"=Cancel" + System.Environment.NewLine + "Left Click=Start Tile";
+                m_uiBlocker.GetComponentInChildren<Text>().text = "\"ESC\"=Cancel" + System.Environment.NewLine + "Left Click=Start waypoint";
                 if (Input.GetMouseButtonDown(0))
                 {
                     Ray r1 = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -422,7 +422,7 @@ public class ControlPanelScript : MonoBehaviour
                             m_uiBlocker.gameObject.SetActive(false);
                             if (m_tempWayPoints.Count > 0)
                             {
-                                SpawnAgent(m_tempStartTile, m_tempWayPoints.ToArray(), m_newPathInput.text);
+                                SpawnAgent(m_tempStartTile, m_tempWayPoints.ToArray(), m_newPathInput.text,MoveAgent.OAMode.ACTIVE);
                                 m_newPathInput.text = "";
                                 m_newPathInput.ActivateInputField();
                             }
@@ -471,36 +471,36 @@ public class ControlPanelScript : MonoBehaviour
                 }
                 break;
 
-            case InputState.SETTING_TARGET:
-                Ray r5 = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit5;
-                AStarTile target = null;
-                if (Physics.Raycast(r5, out hit5, 500, LayerMask.GetMask("AstarTile")))
-                {
-                    target = hit5.transform.GetComponent<AStarTile>();
-                    if (target != null)
-                    {
-                        m_CommonTarget.position = target.transform.position;
-                        m_CommonTarget.localScale = new Vector3(target.Grid.TileSize.x, target.Grid.TileSize.x, target.Grid.TileSize.x);
-                        m_CommonTarget.gameObject.SetActive(true);
+            //case InputState.SETTING_TARGET:
+            //    Ray r5 = Camera.main.ScreenPointToRay(Input.mousePosition);
+            //    RaycastHit hit5;
+            //    AStarTile target = null;
+            //    if (Physics.Raycast(r5, out hit5, 500, LayerMask.GetMask("AstarTile")))
+            //    {
+            //        target = hit5.transform.GetComponent<AStarTile>();
+            //        if (target != null)
+            //        {
+            //            m_CommonTarget.position = target.transform.position;
+            //            m_CommonTarget.localScale = new Vector3(target.Grid.TileSize.x, target.Grid.TileSize.x, target.Grid.TileSize.x);
+            //            m_CommonTarget.gameObject.SetActive(true);
 
-                        if (Input.GetMouseButtonDown(0))
-                        {
-                            foreach (AgentToggleScript t in m_agentToggles)
-                            {
-                                if (t.GetComponent<Toggle>() != null && t.GetComponent<Toggle>().isOn)
-                                {
-                                    t.Agent.SetWayPoints(new Vector2Int[] { new Vector2Int(target.X,target.Y)});
-                                }
-                            }
-                            m_CommonTarget.gameObject.SetActive(false);
-                            m_uiBlocker.gameObject.SetActive(false);
-                            InputState = InputState.COMPLETE;
-                        }
-                    }
-                }
+            //            if (Input.GetMouseButtonDown(0))
+            //            {
+            //                foreach (AgentToggleScript t in m_agentToggles)
+            //                {
+            //                    if (t.GetComponent<Toggle>() != null && t.GetComponent<Toggle>().isOn)
+            //                    {
+            //                        t.Agent.SetWayPoints(new Vector2Int[] { new Vector2Int(target.X,target.Y)});
+            //                    }
+            //                }
+            //                m_CommonTarget.gameObject.SetActive(false);
+            //                m_uiBlocker.gameObject.SetActive(false);
+            //                InputState = InputState.COMPLETE;
+            //            }
+            //        }
+            //    }
 
-                break;
+            //    break;
             default:
                 break;
         }
@@ -508,10 +508,10 @@ public class ControlPanelScript : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.Escape))
         {
-            if (InputState == InputState.ADDING_BLOCK || 
-                InputState == InputState.WAITING_START || 
-                InputState == InputState.WAITING_TARGET ||
-                InputState == InputState.SETTING_TARGET)
+            if (InputState == InputState.ADDING_BLOCK
+                ||InputState == InputState.WAITING_START
+                ||InputState == InputState.WAITING_TARGET)
+//                ||InputState == InputState.SETTING_TARGET)
             {
                 InputState = InputState.COMPLETE;
                 if (m_line != null)
@@ -520,7 +520,7 @@ public class ControlPanelScript : MonoBehaviour
                     m_tempWayPoints.Clear();
                 }
                 m_uiBlocker.gameObject.SetActive(false);
-                m_CommonTarget.gameObject.SetActive(false);
+//                m_CommonTarget.gameObject.SetActive(false);
             }
         }
     }

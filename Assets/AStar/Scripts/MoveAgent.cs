@@ -53,8 +53,8 @@ namespace AStar
         private float m_instantSpeed;
         private Vector3 m_lastLocation;
         private bool m_astarFlag;
-        private AStarLayer m_astarLayer;
-        private List<AStarLayer> m_obstacleLayers;
+        [SerializeField]private AStarLayer m_astarLayer;
+        [SerializeField]private List<AStarLayer> m_obstacleLayers;
         private AStarTile m_activeModePrevNextTile;
         private float m_prevUnsuccessfulTime;
 
@@ -203,7 +203,6 @@ namespace AStar
 
             Grid = s_tile.Grid;
             m_targetTile = s_tile.Grid.GetTile(target.x, target.y);
-            AgentState = AgentState.TARGETING;
 
             m_astarThread?.Abort();
             s_tile.Layer = m_astarLayer;
@@ -212,6 +211,7 @@ namespace AStar
             m_astarFlag = false;
             m_astarThread = new Thread(TargetRoute);
             m_astarThread.Start();
+            AgentState = AgentState.TARGETING;
         }
 
 
@@ -287,7 +287,7 @@ namespace AStar
 
         private void FixedUpdate()
         {
-            m_deltaTime = Time.unscaledDeltaTime;
+            m_deltaTime = Time.fixedUnscaledDeltaTime;
             m_instantSpeed = Vector3.Distance(m_moveTrans.position, m_lastLocation) / m_deltaTime;
             m_lastLocation = m_moveTrans.position;
             if (AgentState == AgentState.ROUTING || AgentState == AgentState.TARGETING)
@@ -353,7 +353,7 @@ namespace AStar
                         //Active mode. Start path finding when the distance to the next tile is small enough
                         else if (oaMode == OAMode.ACTIVE)
                         {
-                            if (m_pathTiles.Count >= 2 && dist <= m_instantSpeed * m_astarTime + 0.01f &&
+                            if (m_pathTiles.Count >= 2 && dist <= m_instantSpeed * m_astarTime + 0.05f &&
                                 m_activeModePrevNextTile != m_pathTiles[1])
                             {
                                 m_astarFlag = true;
@@ -451,7 +451,6 @@ namespace AStar
                 //        }
                 //    }
                 //}
-
                 if (m_pathTiles != null && m_pathTiles.Count > 1)
                 {
                     m_pathTiles[0].Layer = m_astarLayer;

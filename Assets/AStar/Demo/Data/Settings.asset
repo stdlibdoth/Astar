@@ -14,5 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   layers:
   - layerID: BLANK
+    m_order: 0
   - layerID: BLOCK
+    m_order: 1
   - layerID: AGENT
+    m_order: 2

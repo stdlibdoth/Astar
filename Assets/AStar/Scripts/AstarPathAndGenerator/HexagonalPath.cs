@@ -29,14 +29,14 @@ namespace AStar
                 current = open_nodes[0];
                 foreach (AStarNode node in open_nodes)
                 {
-                    if (node.F - current.F < -0.0001f)
+                    if (node.g + node.h - current.g - current.h < -0.01f)
                     {
                         current = node;
                     }
-                    else if (node.F == current.F && node.g < current.g)
-                    {
-                        current = node;
-                    }
+                    //else if (node.g + node.h == current.g + current.h && node.g < current.g)
+                    //{
+                    //    current = node;
+                    //}
                 }
                 open_nodes.Remove(current);
                 if (current != startnode)

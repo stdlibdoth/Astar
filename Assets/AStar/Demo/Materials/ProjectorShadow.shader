@@ -128,7 +128,7 @@ Shader "ProjectorShadow"
 			ENDCG
 		}
 	}
-	CustomEditor "ASEMaterialInspector"
+//	CustomEditor "ASEMaterialInspector"
 	
 	
 }
